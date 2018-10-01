@@ -12,6 +12,7 @@ package articlecreator.gui;
  * intact in the beginning of any source code file that references, copies or
  * uses (in any way, shape or form) code contained in this file.
  */
+import articlecreator.HttpUrlConnectionExample;
 import articlecreator.gui.dl.*;
 
 import java.io.*;
@@ -33,6 +34,9 @@ import javax.swing.plaf.metal.MetalTabbedPaneUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import za.co.utils.AWTUtils;
 
 // MyEditor 1.04. Last updated: 3/07/2002
@@ -48,6 +52,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String JAVA_HOME = System.getProperty("java.home");
     public static final String CURRENT_DIR = System.getProperty("user.dir");
+    private final String USER_AGENT = "Mozilla/5.0";
     private JDesktopPane desktop;
     private JLabel statusLabel1, statusLabel2, statusLabel3;
     private JSplitPane vSplit, hSplit, listSplit;
@@ -278,6 +283,70 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
     }
 
+    private void runProject(Object selectedProject) {
+        ProjectItem item = (ProjectItem) selectedProject;
+
+        JSONParser parser = new JSONParser();
+
+        String dir = "";
+        String keyWords = "";
+        try {
+            JSONObject savedProjJSON = (JSONObject) parser.parse(item.getJSONObject());
+            dir = (String) savedProjJSON.get("dir");
+            keyWords = (String) savedProjJSON.get("keyWords");
+            Hashtable prop = initProjectProperties(dir);
+            saveLinksForKeyWords(dir,prop, keyWords);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+    }
+
+    private void saveLinksForKeyWords(String dir,Hashtable prop, String keyWords) {
+        String[] keyWord = keyWords.split(",");
+        for (int i = 0; i < keyWord.length; i++) {
+            extractLinksForKeyWord(prop,keyWord[i]);
+            saveProjectPoerties(prop, dir);
+        }
+    }
+
+    private void extractLinksForKeyWord(Hashtable prop, String keyWord) {
+        try {
+            String urlSearch = (String) defaultProps.get("SEARCH_ENGINE");
+            if (urlSearch == null || urlSearch == "") {
+                urlSearch = "http://www.google.com/search?q=";
+            }
+            String search = keyWord;//"stackoverflow";
+            String charset = "UTF-8";
+            String userAgent = USER_AGENT; // Change this to your company's name and bot homepage!
+            Elements links = Jsoup.connect(urlSearch + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
+            JSONObject mainObj = new JSONObject();
+            JSONArray arrJSON = new JSONArray();
+            for (org.jsoup.nodes.Element link : links) {
+                String title = link.text();
+                String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
+                url = URLDecoder.decode(url.substring(url.indexOf('=') + 1, url.indexOf('&')), "UTF-8");
+
+                if (!url.startsWith("http")) {
+                    continue; // Ads/news/etc.
+                }
+                JSONObject o = new JSONObject();
+                o.put("title", title);
+                o.put("URL", url);
+                arrJSON.add(o);
+                System.out.println("Title: " + title);
+                System.out.println("URL: " + url);
+            }
+            mainObj.put(keyWord, arrJSON);
+           // JSONParser parser  =new JSONParser();
+            prop.put(keyWord, arrJSON.toJSONString());
+            //.    get().select(".g>.r>a");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void deleteSelectedProject() {
         String projProperties = (String) defaultProps.get("PROJECTS");
         if (projProperties == null || projProperties.isEmpty()) {
@@ -293,23 +362,23 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         JSONArray projectsJSON = null;
         JSONObject savedProjJSON = null;
         try {
-             savedProjJSON = (JSONObject) parser.parse(projProperties);
-             projectsJSON = (JSONArray) savedProjJSON.get("prj");
+            savedProjJSON = (JSONObject) parser.parse(projProperties);
+            projectsJSON = (JSONArray) savedProjJSON.get("prj");
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
 
         Iterator<JSONObject> objs = projectsJSON.iterator();
-        
+
         while (objs.hasNext()) {
             JSONObject p = (JSONObject) objs.next();
             if (((String) p.get("name")).equals(selectedProject.toString())) {
-               projectsJSON.remove(p);
+                projectsJSON.remove(p);
                 break;
             }
         }// end while
-        
+
         savedProjJSON.put("prj", projectsJSON);
         defaultProps.put("PROJECTS", savedProjJSON.toJSONString());
         saveProperties();
@@ -1332,6 +1401,28 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     }
 
+    class RunProjectAction extends AbstractAction {
+
+        RunProjectAction() {
+            super("Run Project", new ImageIcon(AWTUtils.getIcon(desktop, "/images/Compile24.gif")));
+
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (projectList.getSelectedValue() != null) {
+                final Object selectedProject = projectList.getSelectedValue();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runProject(selectedProject);
+                    }
+                });
+            }
+        }
+
+    }
+
     class DeleteAction extends AbstractAction {
 
         JTextField jtf;
@@ -2275,6 +2366,10 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         JMenuItem menuItem = new JMenuItem();
         menuItem.setAction(deleteAction);
         popupProj.add(menuItem);
+        
+        menuItem = new JMenuItem();
+        menuItem.setAction(new RunProjectAction());
+        popupProj.add(menuItem);
     }
 
     public void createPopup() {
@@ -2967,6 +3062,40 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void saveProjectPoerties(Hashtable prop, String dir) {
+        try {
+            FileOutputStream fos = new FileOutputStream(dir + FILE_SEPARATOR + "defaultProperties");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(prop);
+            oos.flush();
+            oos.close();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Hashtable initProjectProperties(String dir) {
+        Hashtable defaultPropsForProjectLinks = new Hashtable();
+        File file = new File(dir + FILE_SEPARATOR + "defaultProperties");
+        if (!file.exists()) {
+
+            saveProjectPoerties(defaultPropsForProjectLinks, dir);
+
+        } else {
+            try {
+                FileInputStream fis = new FileInputStream(dir + FILE_SEPARATOR + "defaultProperties");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                defaultPropsForProjectLinks = (Hashtable) ois.readObject();
+                ois.close();
+                fis.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return defaultPropsForProjectLinks;
     }
 
     public void initProperties() {
