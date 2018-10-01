@@ -1,0 +1,84 @@
+====================================================================
+							ChangeLog
+====================================================================
+
+
+$ Last updated: 3/07/2002, 6:01 PM
+
+--------------------------------------------------------------------------------------
+
+
+$$$$ MyEditor 1.0 finalized and released on 15/01/2002 $$$$
+
+--------------------------------------------------------------------------------------
+
+CommandDialog.java: 28/01/2002, 12:38 PM
+Bug fixes: JFileChooser in browseAction works now.
+
+FindDialog.java: 28/01/2002, 11:11 PM
+Bug fixes: Popup menu works now after Look&Feel changes by adding update().
+
+CommandDialog.java: 29/01/2002
+Bug fixes: Update Look&Feel of popup menu after MyEditor changes Look&Feel 
+by adding update().
+
+FindDialog.java: 29/01/2002, 4:04 PM
+Bug fixes: Update Look&Feel of popup menu after MyEditor changes Look&Feel.
+
+MyEditor.java: 29/01/2002, 4:30 PM
+Bug fixes: Gutter's font now changes in response to state of bold/italic 
+button on toolbar.
+
+MyEditor.java, FontColorPanel.java: 29/01/2002, 10:39 PM
+Bug fixes: Font defined in FontColorPanel will now be reflected on MyEditor.
+
+
+$$$$ MyEditor Version changes to 1.01 to reflect bug fixes above: 29/01/2002, 10:44 PM
+
+--------------------------------------------------------------------------------------
+
+MyEditor.java, Build.java: 23/02/2002
+Due to unpopular request, I requested myself to add 'Project Build' feature now.
+
+MyEditor.java, FontColorPanel.java, ColorOptionPanel.java: 25/02/2002
+Bug fixes: Highlighted line color can now be customized for console and 
+file window.
+
+$$$$ MyEditor Version changes to 1.02 to reflect changes above $$$$
+
+--------------------------------------------------------------------------------------
+
+MyEditor updated to run in j2sdk1.4.0 now. Previous version of jdk is not supported
+due to changes in Swing package: 21/04/2002
+
+Changing Look&Feel features taken off due to maintenace problem with changing Swing
+package: 21/04/2002
+
+'Indent and undent selected lines in text file' feature taken off due to maintenace
+problem: 21/04/2002
+
+'JTextArea focus problems' solved by SwingUtilities.invokeLater: 21/04/2002
+
+Items in JList labelled 'Marked Lines:' are now sorted by modifying 
+MyBasicTextAreaUI: 22/04/2002
+
+Console window now also outputs time taken to compile a java file or build a project:
+23/04/2002
+
+$$$$ MyEditor Version changes to 1.03 to reflect changes above $$$$
+
+--------------------------------------------------------------------------------------
+
+1/7/02
+* Copy selected text on console window works now. 
+* Sorting of JList labelled 'markedlines' works properly now
+* A file saved as a new file with repeating file name but different case
+  will not cause new entry added in file history menu. 
+* Right file window returned after a file is saved as a new file.
+
+3/7/02
+* Highlight console output lines containing xxx.java where
+  xxx is the name of the compiled file works now.
+* Customize default editor's caret color works now.
+
+$$$$ MyEditor Version changes to 1.04 to reflect changes above $$$$
