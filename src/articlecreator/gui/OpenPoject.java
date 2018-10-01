@@ -30,21 +30,26 @@ public class OpenPoject extends javax.swing.JPanel {
     private JList projectList;
     private JFileChooser chooser;
     public static final String CURRENT_DIR = System.getProperty("user.dir");
-
+    private ProjectItem selectedObj;
     /**
      * Creates new form OpenPoject
      */
-    public OpenPoject(DefaultListModel projectListModel, JList projectList) {
+    public OpenPoject(DefaultListModel projectListModel, JList projectList,Object selectedObject) {
         super();
         this.projectList = projectList;
         this.projectListModel = projectListModel;
         chooser = new JFileChooser(CURRENT_DIR);
+        if (selectedObject != null 
+                 && selectedObject instanceof ProjectItem)
+            this.selectedObj = (ProjectItem)selectedObject;
         //this.defaultProperties = defaultProperties;
         setLayout(new FlowLayout());
         initComponents();
+        parseSelectedObject();
 
     }
-
+     
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -170,7 +175,20 @@ public class OpenPoject extends javax.swing.JPanel {
                 .addGap(23, 23, 23))
         );
     }// </editor-fold>//GEN-END:initComponents
-
+   private void parseSelectedObject()
+   {
+       if (selectedObj == null)
+           return;
+       JSONParser parser = new JSONParser();
+            try {
+                JSONObject p = (JSONObject) parser.parse(selectedObj.getJSONObject());
+                txtProjName.setText((String) p.get("name"));
+                txtKeyWords.setText((String)p.get("keyWords"));
+                txtProjectDirectory.setText((String) p.get("dir" ));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+   }
     private void btnProjectSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectSaveActionPerformed
 
         String projName, keyWords, dir;
@@ -278,7 +296,7 @@ public class OpenPoject extends javax.swing.JPanel {
                     selectedIndex = cnt;
                 }
                 cnt++;
-                projectListModel.addElement(new projectItem() {
+                projectListModel.addElement(new ProjectItem() {
                     @Override
                     public String toString() {
                         return (String) p.get("name");
@@ -332,10 +350,4 @@ public class OpenPoject extends javax.swing.JPanel {
         this.defaultProperties = defaultProperties;
     }
 
-    public interface projectItem {
-
-        public String toString();
-
-        public String getJSONObject();
-    }
 }

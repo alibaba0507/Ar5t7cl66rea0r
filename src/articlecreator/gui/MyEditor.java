@@ -1,19 +1,16 @@
 package articlecreator.gui;
 
-/** 
- *  Copyright 1999-2002 Matthew Robinson and Pavel Vorobiev. 
- *  All Rights Reserved. 
- *            
- *  =================================================== 
- *  This program contains code from the book "Swing" 
- *  1st Edition by Matthew Robinson and Pavel Vorobiev 
- *  http://www.spindoczine.com/sbe 
- *  =================================================== 
- * 
- *  The above paragraph must be included in full, unmodified 
- *  and completely intact in the beginning of any source code 
- *  file that references, copies or uses (in any way, shape 
- *  or form) code contained in this file. 
+/**
+ * Copyright 1999-2002 Matthew Robinson and Pavel Vorobiev. All Rights Reserved.
+ *
+ * =================================================== This program contains
+ * code from the book "Swing" 1st Edition by Matthew Robinson and Pavel Vorobiev
+ * http://www.spindoczine.com/sbe
+ * ===================================================
+ *
+ * The above paragraph must be included in full, unmodified and completely
+ * intact in the beginning of any source code file that references, copies or
+ * uses (in any way, shape or form) code contained in this file.
  */
 import articlecreator.gui.dl.*;
 
@@ -42,9 +39,7 @@ import za.co.utils.AWTUtils;
 // Written and tested on J2SDK1.4.0, Win98
 // MyEditor 1.0 released on 15/01/2002.
 // Author: Samuel Huang 
-
 //public class MyEditor extends JMouseWheelFrame implements FileHistory.IFileHistory {
-
 // Uncomment the above line and delete the 1st line below for wheelmouse support on 
 // win32 platform by downloading the gui package (see Thanks.txt for site) and put
 // it in the same directory where MyEditor class is.
@@ -54,22 +49,22 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     public static final String JAVA_HOME = System.getProperty("java.home");
     public static final String CURRENT_DIR = System.getProperty("user.dir");
     private JDesktopPane desktop;
-    private JLabel statusLabel1,  statusLabel2,  statusLabel3;
-    private JSplitPane vSplit,  hSplit,  listSplit;
+    private JLabel statusLabel1, statusLabel2, statusLabel3;
+    private JSplitPane vSplit, hSplit, listSplit;
     private JFileChooser chooser;
-    private JComboBox cbFonts,  cbSizes,  cbFiles;
+    private JComboBox cbFonts, cbSizes, cbFiles;
     private JViewport viewport;
     private ArrayList outputList = new ArrayList();
-    private DefaultListModel consolesListModel,projectListModel; 
-    private JList consolesList,  markedLinesList,projectList;
-    private SmallToggleButton italicButton,  boldButton;
-    private JButton clearButton,  goButton,  tabButton;
+    private DefaultListModel consolesListModel, projectListModel;
+    private JList consolesList, markedLinesList, projectList;
+    private SmallToggleButton italicButton, boldButton;
+    private JButton clearButton, goButton, tabButton;
     private InternalFrameListener internalFrameListener;
     private UndoHandler undoHandler;
-    private JTextField goToLine,  tabField;
+    private JTextField goToLine, tabField;
     private JRadioButton radioButton;
     // This is 
-    private Action openAction,  newAction,  findAndReplaceAction,  saveAction,  saveAsAction,  commandAction,  stopAction,  cutAction,  copyAction,  pasteAction,  compileAction,  runAction,  appletAction,  exitAction,  clearAction,  selectAll,  deleteAction,  goAction,  tabAction,  buildAction,  tipsAction,  aboutAction,  readMeAction;
+    private Action openAction, newAction, findAndReplaceAction, saveAction, saveAsAction, commandAction, stopAction, cutAction, copyAction, pasteAction, compileAction, runAction, appletAction, exitAction, clearAction, selectAll, deleteAction, goAction, tabAction, buildAction, tipsAction, aboutAction, readMeAction;
     private UndoAction undoAction;
     private RedoAction redoAction;
     private FindDialog findDialog;  // Dialog for finding and replacing word
@@ -81,15 +76,17 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         "Save before closing?",
         " "
     };
-    private int m_count = 0,  console_count = 1;
+    private int m_count = 0, console_count = 1;
     private JToolBar toolBar;
     private JMenuBar menuBar;
-    private ColorMenu foregroundMenu1,  backgroundMenu1,  foregroundMenu2,  backgroundMenu2;
+    private ColorMenu foregroundMenu1, backgroundMenu1, foregroundMenu2, backgroundMenu2;
     private JPopupMenu popup;
+    private JPopupMenu popupProj;
     private MouseListener popupListener;
     private RadioButtonAction radioButtonAction;
     private FileHistory fileHistory;
-    private Hashtable actionTable = new Hashtable(),  defaultProps = null;
+    private Hashtable actionTable = new Hashtable(), defaultProps = null;
+    private Object selectedProjectItem;
 
     public MyEditor() {
 
@@ -104,14 +101,12 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         initListeners();
         initActions();
         initProperties();
-       
-
 
         // Set up menu bar
         setJMenuBar(createMenuBar());
 
         createPopup();
-
+        createPopupProject();
         fileHistory = new FileHistory(this); // init FileHistory
         fileHistory.initFileMenuHistory();
 
@@ -121,11 +116,39 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         consolesList = new JList();
         consolesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         consolesListModel = new DefaultListModel();
-        
+
         projectList = new JList();
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectListModel = new DefaultListModel();
-        
+        projectList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    JInternalFrame frame = createProjectFrame(null, null, null);
+                    try {
+                        frame.moveToFront();
+                        frame.setMaximum(true);
+                        frame.setSelected(true);
+                    } catch (Exception ez) {
+                        ez.printStackTrace();
+                    }
+                }
+            }
+
+            public void mousePressed(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            private void ShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    popupProj.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         try {
             consolesList.setModel(consolesListModel);
             projectList.setModel(projectListModel);
@@ -135,33 +158,31 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
         JScrollPane commandScrollPane = new JScrollPane(consolesList);
         JScrollPane projectsScrollPane = new JScrollPane(projectList);
-        
+
         JPanel commandPanel = new JPanel(new BorderLayout());
         JLabel commandLabel = new JLabel("Consoles:");
-         commandLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/History24.gif")));
+        commandLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/History24.gif")));
         commandLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
         commandPanel.add(commandLabel, BorderLayout.NORTH);
         commandPanel.add(commandScrollPane, BorderLayout.CENTER);
-        
+
         JPanel projectPanel = new JPanel(new BorderLayout());
         JLabel projectLabel = new JLabel("Projects:");
         projectLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/Open24.gif")));
-        
+
         projectLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
         projectPanel.add(projectLabel, BorderLayout.NORTH);
         projectPanel.add(projectsScrollPane, BorderLayout.CENTER);
-        
+
         MnemonicTabbedPane tabbedPane = new MnemonicTabbedPane();
-        String[] tabs = { "Projects", "Console"};
-       char[] ms = { 'P', 'C',};
-        int[] keys = { KeyEvent.VK_0, KeyEvent.VK_1 };
+        String[] tabs = {"Projects", "Console"};
+        char[] ms = {'P', 'C',};
+        int[] keys = {KeyEvent.VK_0, KeyEvent.VK_1};
         tabbedPane.addTab(tabs[0], projectPanel);
-      tabbedPane.setMnemonicAt(0, ms[0]);
-         tabbedPane.addTab(tabs[1], commandPanel);
-      tabbedPane.setMnemonicAt(1, ms[1]);
-      //tabbedPane.setMnemonicAt(i, keys[i]);
-   
-        
+        tabbedPane.setMnemonicAt(0, ms[0]);
+        tabbedPane.addTab(tabs[1], commandPanel);
+        tabbedPane.setMnemonicAt(1, ms[1]);
+        //tabbedPane.setMnemonicAt(i, keys[i]);
 
         markedLinesList = new JList();
         markedLinesList.setModel(new DefaultListModel());
@@ -219,7 +240,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         console.addMouseListener(new ConsoleMouseListener(console, myUID, this));
         consolesList.setSelectedIndex(0);
         consolesList.addListSelectionListener(new ConsoleListener());
-
+        projectList.setSelectedIndex(0);
+        projectList.addListSelectionListener(new ProjectListener());
         // GUI layout
 
         JPanel consolePanel = new JPanel(new BorderLayout());
@@ -252,8 +274,46 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(0, 0, screenSize.width, screenSize.height - 50);
-         reloadProjectTree();
+        reloadProjectTree();
 
+    }
+
+    private void deleteSelectedProject() {
+        String projProperties = (String) defaultProps.get("PROJECTS");
+        if (projProperties == null || projProperties.isEmpty()) {
+            return;
+        }
+
+        Object selectedProject = projectList.getSelectedValue();
+        if (selectedProject == null) {
+            return;
+        }
+
+        JSONParser parser = new JSONParser();
+        JSONArray projectsJSON = null;
+        JSONObject savedProjJSON = null;
+        try {
+             savedProjJSON = (JSONObject) parser.parse(projProperties);
+             projectsJSON = (JSONArray) savedProjJSON.get("prj");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        Iterator<JSONObject> objs = projectsJSON.iterator();
+        
+        while (objs.hasNext()) {
+            JSONObject p = (JSONObject) objs.next();
+            if (((String) p.get("name")).equals(selectedProject.toString())) {
+               projectsJSON.remove(p);
+                break;
+            }
+        }// end while
+        
+        savedProjJSON.put("prj", projectsJSON);
+        defaultProps.put("PROJECTS", savedProjJSON.toJSONString());
+        saveProperties();
+        reloadProjectTree();
     }
 
     private void initListeners() {
@@ -483,6 +543,21 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     //	 item.get(1) == JTextArea
     //	 item.get(2) == Process/null
     //    item.get(3) == Run/Build thread
+    class ProjectListener implements ListSelectionListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            int i = projectList.getSelectedIndex();
+            if (i == -1) // Returns if list empty
+            {
+                return;
+            }
+            selectedProjectItem = projectList.getSelectedValue();
+
+        }
+
+    }
+
     class ConsoleListener implements ListSelectionListener {
 
         public void valueChanged(ListSelectionEvent e) {
@@ -809,7 +884,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     // ***************************************
     //   All Action classes assemble here.
     // ***************************************
-
     // Action for creating a new empty file.
     //
     class NewAction extends AbstractAction {
@@ -819,13 +893,13 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
 
         public void actionPerformed(ActionEvent e) {
-            openProjectFile(null);
+            openProjectFile(null, "New Project");
             //openFile(null);
-             
+
         }
     } // End NewAction
-    
-        // Action for opening a file
+
+    // Action for opening a file
     //
     class OpenAction extends AbstractAction {
 
@@ -930,7 +1004,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     } 	// End UndoAction
 
-
     // Action for redo file edits
     //
     class RedoAction extends AbstractAction {
@@ -1026,7 +1099,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     } // End CompileAction
 
-
     // Action for running application
     //
     class RunAction extends AbstractAction {
@@ -1086,9 +1158,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             }
         }
     } // End AppletAction
-
-
-
 
     // Action for saving a file under a new name.
     //
@@ -1238,7 +1307,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
                 // Remove then add back because we want to use consolesList's listener
                 // to update font and color settings of selected console and the 
                 // listener does nothing if consolesList selects an already selected item.
-
                 String item = (String) consolesList.getSelectedValue();
                 consolesListModel.remove(index);
                 consolesListModel.add(index, item);
@@ -1270,17 +1338,28 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
         DeleteAction() {
             super("Delete", new ImageIcon(AWTUtils.getIcon(desktop, "/images/Delete24.gif")));
-            setEnabled(false);
+            // setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent e) {
-            MyInternalFrame frame = getSelectedFrame();
+            Object itemSelected = projectList.getSelectedValue();
+            if (itemSelected != null) {
+                int dialogButton = JOptionPane.YES_NO_OPTION;
+                int dialogResult = JOptionPane.showConfirmDialog(null,
+                        "Do you wnat me to Delete " + itemSelected.toString(), "Warning", dialogButton);
+                if (dialogResult == JOptionPane.YES_OPTION) {
+                    // Saving code here
+                    deleteSelectedProject();
+                }
+            }
+            /*MyInternalFrame frame = getSelectedFrame();
             if (frame == null) {
                 setEnabled(false);
                 return;
             }
             JTextArea jta = frame.getJTextArea();
             jta.replaceSelection("");
+             */
 
         }
     }
@@ -1389,18 +1468,18 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         public void actionPerformed(ActionEvent e) {
             JOptionPane.showMessageDialog(
                     MyEditor.this, // parentComponent
-                    "MyEditor Version: 1.04 \n" + // Message
-                    "Tested on J2SDK1.4.0 \n\n" +
-                    "Previous version of JDK \n" +
-                    "will not work properly. \n\n" +
-                    "Author: Samuel Huang",
+                    "MyEditor Version: 1.04 \n"
+                    + // Message
+                    "Tested on J2SDK1.4.0 \n\n"
+                    + "Previous version of JDK \n"
+                    + "will not work properly. \n\n"
+                    + "Author: Samuel Huang",
                     "MyEditor", // Title
                     JOptionPane.INFORMATION_MESSAGE, // messageType
                     new ImageIcon(AWTUtils.getIcon(desktop, "/images/dining.gif")) // icon 
-                    );
+            );
         }
     }
-
 
     // -------------------------------------------
     //   End of code for Action classes.
@@ -1411,7 +1490,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
                 "Invalid Input in Text Field !",
                 "Warning", // title
                 JOptionPane.ERROR_MESSAGE // optionType
-                );
+        );
     }
 
     public void transferFocusToTextArea() {
@@ -1424,16 +1503,15 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         // frame.setSelected( true );	doesn't work if 
         // transferFocusToTextArea() is called within
         // catch clause of exception handling
-
         JTextArea jta = frame.getJTextArea();
         jta.requestFocus();
 
     }
 
-    public void openProjectFile(final File file) {
+    public void openProjectFile(final File file, String title) {
         JInternalFrame frame = null;
         try {
-            frame = createProjectFrame(null, null);
+            frame = createProjectFrame(null, null, title);
             frame.moveToFront();
             frame.setMaximum(true);
             frame.setSelected(true);
@@ -1476,7 +1554,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             }
         });
     }
-
 
     // Returning the first available console from outputList. If no
     // available console list is found, create a new console entry
@@ -1605,7 +1682,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
                 KeyEvent.CTRL_MASK));
 
         // Code for setting colors of file window and console
-
         foregroundMenu1 = new ColorMenu("Foreground Color");
         backgroundMenu1 = new ColorMenu("Background Color");
         foregroundMenu2 = new ColorMenu("Foreground Color");
@@ -1767,8 +1843,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         button = new JButton(buildAction);
         button.setText(null);
         button.setMargin(new Insets(0, 0, 0, 0));
-        button.setToolTipText("<html>Build Project: Compile all Java files within<br>" +
-                "the same directory of opened java file.</html>");
+        button.setToolTipText("<html>Build Project: Compile all Java files within<br>"
+                + "the same directory of opened java file.</html>");
         toolBar.add(button);
         menuItem = executeMenu.add(buildAction);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2,
@@ -1897,7 +1973,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         // Create lowered labels
         Border loweredBorder = new SoftBevelBorder(SoftBevelBorder.LOWERED);
         Border emptyBorder = new EmptyBorder(-3, 0, -3, 0);
-
 
         clearButton = new JButton("    Clear Console    ");
         clearButton.addActionListener(clearAction);
@@ -2048,15 +2123,30 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
     }
 
-    private JInternalFrame createProjectFrame(JTextArea jta, File file) {
-        String title = "New project";
+    private JInternalFrame createProjectFrame(JTextArea jta, File file, String title) {
+
+        if (title == null && selectedProjectItem == null) {
+            title = "New Project";
+        } else if (selectedProjectItem != null && title == null) {
+            title = selectedProjectItem.toString();
+        }
+        //     else if (title != null)
+
+        JInternalFrame[] frames = desktop.getAllFrames();
+        for (int i = 0; i < frames.length; i++) {
+            if (title != null && frames[i].getTitle().equals(title)) {
+                return frames[i];
+            }
+        }
+
         MyInternalFrame jif = new MyInternalFrame(title, true, true, true, true);
-        OpenPoject proj = new OpenPoject(projectListModel,projectList);
+        OpenPoject proj = new OpenPoject(projectListModel, projectList, selectedProjectItem);
+
         proj.setDefaultProperties(defaultProps);
         // Create undo manager for textArea
         UndoManager undo = new UndoManager();
-         jif.setUndoManager(undo);
-         JScrollPane scroller = new JScrollPane(proj, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        jif.setUndoManager(undo);
+        JScrollPane scroller = new JScrollPane(proj, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         // Decorate jif 		
@@ -2065,11 +2155,16 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         jif.setSize(400, 250);	// A necessary statement	
         jif.setVisible(true);
         jif.addVetoableChangeListener(new CloseListener(jif, undo));
-
-        
+        jif.moveToFront();
+        try {
+            jif.setSelected(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         desktop.add(jif);
         return jif;
     }
+
     // Create a new MyInternalFrame and add it to desktop.
     //
     private JInternalFrame createFrame(JTextArea jta, File file) {
@@ -2172,10 +2267,15 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
         return jif;
 
-    // jif adapter activated called 1st before here 
-
-
+        // jif adapter activated called 1st before here 
     } // End createFrame
+
+    public void createPopupProject() {
+        popupProj = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem();
+        menuItem.setAction(deleteAction);
+        popupProj.add(menuItem);
+    }
 
     public void createPopup() {
 
@@ -2448,14 +2548,14 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     // Show a confirmation dialog before closing a file
     public int closingCheck(MyInternalFrame frame) {
         String s = frame.getFile().getPath();
-        message[ 0] = "File " + s + " has changed";
+        message[0] = "File " + s + " has changed";
         return JOptionPane.showConfirmDialog(
                 this, // parentComponent
                 message, // message
                 "MyEditor", // title
                 JOptionPane.YES_NO_CANCEL_OPTION, // optionType
                 JOptionPane.QUESTION_MESSAGE // messageType
-                );
+        );
     }
 
     public boolean save(MyInternalFrame jif, boolean b) {
@@ -2476,8 +2576,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
                 chooser.rescanCurrentDirectory();
 
-                if (chooser.showSaveDialog(null) !=
-                        JFileChooser.APPROVE_OPTION) {
+                if (chooser.showSaveDialog(null)
+                        != JFileChooser.APPROVE_OPTION) {
                     return false;
                 }
 
@@ -2498,7 +2598,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
                             "Save File As", // title
                             JOptionPane.YES_NO_OPTION, // optionType
                             JOptionPane.WARNING_MESSAGE // messageType
-                            );
+                    );
 
                     if (result == JOptionPane.YES_OPTION) {
                         break;
@@ -2603,7 +2703,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
     }  // End checkRepeatFileName
 
-
     // Check if given path to file is already open
     public boolean checkFileAlreadyOpen(String path) {
         boolean fileAlreadyOpen = false;
@@ -2643,7 +2742,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             try {
                 jif[i].setClosed(true);
             } catch (PropertyVetoException pve) {
-            // Exception caught when closing event vetoed.
+                // Exception caught when closing event vetoed.
             }
         }
         int size = desktop.getAllFrames().length;
@@ -2652,7 +2751,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
 
     }   // End closeEditor
-
 
     // Return selected frame in desktop
     public MyInternalFrame getSelectedFrame() {
@@ -2686,7 +2784,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         ArrayList al = (ArrayList) outputList.get(i);
         return (JTextArea) al.get(1);
     }
-
 
     // --- Implementation of FileHistory.IFileHistory interface ----------------
     public String getApplicationName() {
@@ -2790,7 +2887,9 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         Toolkit.getDefaultToolkit().beep();
         System.exit(0);
     }
+
     public void reloadProjectTree() {
+        projectListModel.clear();
         String savedProjects = (String) defaultProps.get("PROJECTS");
         JSONObject savedProjJSON = new JSONObject();
         JSONParser parser = new JSONParser();
@@ -2801,29 +2900,30 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             int selectedIndex = 0;
             int cnt = 0;
             while (objs.hasNext()) {
-               
-               final JSONObject p = (JSONObject) objs.next();
-               //if (( (String) p.get("name")).equals(txtProjName.getText()))
+
+                final JSONObject p = (JSONObject) objs.next();
+                //if (( (String) p.get("name")).equals(txtProjName.getText()))
                 //   selectedIndex = cnt;
-               cnt++;
-                projectListModel.addElement(new OpenPoject.projectItem() {
+                cnt++;
+                projectListModel.addElement(new ProjectItem() {
                     @Override
                     public String toString() {
-                        return  (String) p.get("name");
+                        return (String) p.get("name");
                     }
-                    
+
                     @Override
                     public String getJSONObject() {
-                      return p.toJSONString();
+                        return p.toJSONString();
                     }
                 });
             }// end while
-           projectList.setSelectedIndex(cnt);
+            projectList.setSelectedIndex(cnt);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+
     public void loadProperties() {
         defaultProps = null;
         try {
@@ -2926,8 +3026,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     // Called by FontColorPanel.java to update buttons of font style on tool bar.
     //
     public void updateFontPanel(JTextArea textArea, String type) {
-        if ((type.equals("CONSOLE") && radioButton.isSelected()) ||
-                (type.equals("EDITOR") && !radioButton.isSelected())) {
+        if ((type.equals("CONSOLE") && radioButton.isSelected())
+                || (type.equals("EDITOR") && !radioButton.isSelected())) {
             Font font = textArea.getFont();
             boldButton.setSelected(font.isBold());
             italicButton.setSelected(font.isItalic());
@@ -2946,7 +3046,6 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         frame.setVisible(true);
     }
 }  // End MyEditor
-
 
 // Default caret of JTextArea disappear occassionally after gaining and 
 // regaining focus in desktop pane. myCaret gets around this problem.
@@ -2988,8 +3087,9 @@ class CustomFileView extends FileView {
 }
 
 /**
- **  SuffixAwareFilter, JavaCodeFilter and TextFilter classes are copied and pasted
- **  here from example 16-5 of 'Graphic Java 2, Mastering the JFC' by David M. Geary.
+ ** SuffixAwareFilter, JavaCodeFilter and TextFilter classes are copied and
+ * pasted * here from example 16-5 of 'Graphic Java 2, Mastering the JFC' by
+ * David M. Geary.
  */
 abstract class SuffixAwareFilter extends javax.swing.filechooser.FileFilter {
 
@@ -3038,91 +3138,93 @@ class TextFilter extends SuffixAwareFilter {
     public String getDescription() {
         return "Text Files(*.txt)";
     }
-}	
-
+}
 
 class MnemonicTabbedPane extends JTabbedPane {
-  Hashtable mnemonics = null;
 
-  int condition;
+    Hashtable mnemonics = null;
 
-  public MnemonicTabbedPane() {
-    setUI(new MnemonicTabbedPaneUI());
-    mnemonics = new Hashtable();
+    int condition;
 
-    // I don't know which one is more suitable for mnemonic action.
-    //setMnemonicCondition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-    setMnemonicCondition(WHEN_IN_FOCUSED_WINDOW);
-  }
+    public MnemonicTabbedPane() {
+        setUI(new MnemonicTabbedPaneUI());
+        mnemonics = new Hashtable();
 
-  public void setMnemonicAt(int index, char c) {
-    int key = (int) c;
-    if ('a' <= key && key <= 'z') {
-      key -= ('a' - 'A');
-    }
-    setMnemonicAt(index, key);
-  }
-
-  public void setMnemonicAt(int index, int keyCode) {
-    ActionListener action = new MnemonicAction(index);
-    KeyStroke stroke = KeyStroke
-        .getKeyStroke(keyCode, ActionEvent.ALT_MASK);
-    registerKeyboardAction(action, stroke, condition);
-    mnemonics.put(new Integer(index), new Integer(keyCode));
-  }
-
-  public int getMnemonicAt(int index) {
-    int keyCode = 0;
-    Integer m = (Integer) mnemonics.get(new Integer(index));
-    if (m != null) {
-      keyCode = m.intValue();
-    }
-    return keyCode;
-  }
-
-  public void setMnemonicCondition(int condition) {
-    this.condition = condition;
-  }
-
-  public int getMnemonicCondition() {
-    return condition;
-  }
-
-  class MnemonicAction implements ActionListener {
-    int index;
-
-    public MnemonicAction(int index) {
-      this.index = index;
+        // I don't know which one is more suitable for mnemonic action.
+        //setMnemonicCondition(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        setMnemonicCondition(WHEN_IN_FOCUSED_WINDOW);
     }
 
-    public void actionPerformed(ActionEvent e) {
-      MnemonicTabbedPane tabbedPane = (MnemonicTabbedPane) e.getSource();
-      tabbedPane.setSelectedIndex(index);
-      tabbedPane.requestFocus();
+    public void setMnemonicAt(int index, char c) {
+        int key = (int) c;
+        if ('a' <= key && key <= 'z') {
+            key -= ('a' - 'A');
+        }
+        setMnemonicAt(index, key);
     }
-  }
 
-  class MnemonicTabbedPaneUI extends MetalTabbedPaneUI {
-    protected void paintText(Graphics g, int tabPlacement, Font font,
-        FontMetrics metrics, int tabIndex, String title,
-        Rectangle textRect, boolean isSelected) {
-      g.setFont(font);
-      MnemonicTabbedPane mtabPane = (MnemonicTabbedPane) tabPane;
-      if (tabPane.isEnabled() && tabPane.isEnabledAt(tabIndex)) {
-        g.setColor(tabPane.getForegroundAt(tabIndex));
-        BasicGraphicsUtils.drawString(g, title, mtabPane
-            .getMnemonicAt(tabIndex), textRect.x, textRect.y
-            + metrics.getAscent());
-      } else {
-        g.setColor(tabPane.getBackgroundAt(tabIndex).brighter());
-        BasicGraphicsUtils.drawString(g, title, mtabPane
-            .getMnemonicAt(tabIndex), textRect.x, textRect.y
-            + metrics.getAscent());
-        g.setColor(tabPane.getBackgroundAt(tabIndex).darker());
-        BasicGraphicsUtils.drawString(g, title, mtabPane
-            .getMnemonicAt(tabIndex), textRect.x - 1, textRect.y
-            + metrics.getAscent() - 1);
-      }
+    public void setMnemonicAt(int index, int keyCode) {
+        ActionListener action = new MnemonicAction(index);
+        KeyStroke stroke = KeyStroke
+                .getKeyStroke(keyCode, ActionEvent.ALT_MASK);
+        registerKeyboardAction(action, stroke, condition);
+        mnemonics.put(new Integer(index), new Integer(keyCode));
     }
-  }
+
+    public int getMnemonicAt(int index) {
+        int keyCode = 0;
+        Integer m = (Integer) mnemonics.get(new Integer(index));
+        if (m != null) {
+            keyCode = m.intValue();
+        }
+        return keyCode;
+    }
+
+    public void setMnemonicCondition(int condition) {
+        this.condition = condition;
+    }
+
+    public int getMnemonicCondition() {
+        return condition;
+    }
+
+    class MnemonicAction implements ActionListener {
+
+        int index;
+
+        public MnemonicAction(int index) {
+            this.index = index;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            MnemonicTabbedPane tabbedPane = (MnemonicTabbedPane) e.getSource();
+            tabbedPane.setSelectedIndex(index);
+            tabbedPane.requestFocus();
+        }
+    }
+
+    class MnemonicTabbedPaneUI extends MetalTabbedPaneUI {
+
+        protected void paintText(Graphics g, int tabPlacement, Font font,
+                FontMetrics metrics, int tabIndex, String title,
+                Rectangle textRect, boolean isSelected) {
+            g.setFont(font);
+            MnemonicTabbedPane mtabPane = (MnemonicTabbedPane) tabPane;
+            if (tabPane.isEnabled() && tabPane.isEnabledAt(tabIndex)) {
+                g.setColor(tabPane.getForegroundAt(tabIndex));
+                BasicGraphicsUtils.drawString(g, title, mtabPane
+                        .getMnemonicAt(tabIndex), textRect.x, textRect.y
+                        + metrics.getAscent());
+            } else {
+                g.setColor(tabPane.getBackgroundAt(tabIndex).brighter());
+                BasicGraphicsUtils.drawString(g, title, mtabPane
+                        .getMnemonicAt(tabIndex), textRect.x, textRect.y
+                        + metrics.getAscent());
+                g.setColor(tabPane.getBackgroundAt(tabIndex).darker());
+                BasicGraphicsUtils.drawString(g, title, mtabPane
+                        .getMnemonicAt(tabIndex), textRect.x - 1, textRect.y
+                        + metrics.getAscent() - 1);
+            }
+        }
+    }
 }
