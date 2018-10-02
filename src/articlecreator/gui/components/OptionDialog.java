@@ -1,5 +1,8 @@
-package articlecreator.gui;
+package articlecreator.gui.components;
 
+import articlecreator.gui.FontColorPanel;
+import articlecreator.gui.MyEditor;
+import articlecreator.gui.TextFormatPanel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;     

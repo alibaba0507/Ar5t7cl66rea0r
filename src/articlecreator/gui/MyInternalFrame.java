@@ -11,7 +11,7 @@ import java.io.File;
 
 // Author: Samuel Huang, 12/01/2002
 
-class MyInternalFrame extends JInternalFrame {
+public class MyInternalFrame extends JInternalFrame {
 
    private int lineNumber = 1;
    private JScrollPane jsp = null;
@@ -22,7 +22,7 @@ class MyInternalFrame extends JInternalFrame {
 	private long lastModified;
 	private KeyListener tabKeyListener = null; 
 	
-	MyInternalFrame( String title, boolean a, boolean b, boolean c, boolean d) {
+	public MyInternalFrame( String title, boolean a, boolean b, boolean c, boolean d) {
 		super( title, a, b, c, d );
 		lineArea = new JTextArea();
 		lineArea.setEditable( false );

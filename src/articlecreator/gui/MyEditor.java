@@ -12,6 +12,10 @@ package articlecreator.gui;
  * intact in the beginning of any source code file that references, copies or
  * uses (in any way, shape or form) code contained in this file.
  */
+import articlecreator.gui.components.OptionDialog;
+import articlecreator.gui.components.ui.ProjectItem;
+import articlecreator.gui.components.OpenPoject;
+import articlecreator.gui.run.SplashScreen;
 import articlecreator.HttpUrlConnectionExample;
 import articlecreator.ParseHTMLArticles;
 import articlecreator.gui.dl.*;
@@ -89,13 +93,14 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     private JPopupMenu popup;
     private JPopupMenu popupProj;
     private MouseListener popupListener;
-    private RadioButtonAction radioButtonAction;
+    private RadioButtonAction radfioButtonAction;
     private FileHistory fileHistory;
     private Hashtable actionTable = new Hashtable(), defaultProps = null;
     private Object selectedProjectItem;
     private JTextArea console;
     private boolean hasStartProcess;
-
+    private ArticleExtractor articleExtractor;
+    private java.util.Timer articleScanerTimer;
     public MyEditor() {
 
         super("MyEditor");
@@ -104,7 +109,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         desktop = new JDesktopPane();
         toolBar = new JToolBar();
         menuBar = new JMenuBar();
-
+        
         loadActionTable();
         initListeners();
         initActions();
@@ -284,21 +289,11 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(0, 0, screenSize.width, screenSize.height - 50);
         reloadProjectTree();
-
+        // This is where  the articles get scann
         hasStartProcess = true;
-        java.util.Timer t = new java.util.Timer();
-        t.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    while (hasStartProcess) {
-                        startProcess();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }, 200, 500);
+        articleExtractor = new ArticleExtractor(defaultProps,console);
+        articleScanerTimer = new java.util.Timer();
+        articleScanerTimer.schedule(articleExtractor, 200, 500);
 
     }
 
@@ -375,25 +370,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     }
 
-    private void extractTextFromArticle(String url, int cnt, String dir) {
-        String charset = "UTF-8";
-        String userAgent = USER_AGENT; // Change this to your company's name and bot homepage!
-        try {
-            URL u = new URL(url);
-            
-            String baseUri = (new StringBuilder())
-            .append(u.getProtocol())
-            .append("://")
-            .append(u.getHost())
-            .toString();
-            /*
-             org.jsoup.nodes.Document doc = ParseHTMLArticles.connectAsBrowser(url);
-             ParseHTMLArticles.parse(doc, dir, cnt,baseUri);
-        */
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    
 
     private void extractLinksForKeyWord(Hashtable prop, String keyWord) {
         try {
@@ -404,7 +381,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             String search = keyWord;//"stackoverflow";
             String charset = "UTF-8";
             String userAgent = USER_AGENT; // Change this to your company's name and bot homepage!
-            Elements links = Jsoup.connect(urlSearch + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
+            Elements links = Jsoup.connect(urlSearch + URLEncoder.encode(search, charset))
+                     .userAgent(userAgent).get().select(".g>.r>a");
             JSONObject mainObj = new JSONObject();
             JSONArray arrJSON = new JSONArray();
             for (org.jsoup.nodes.Element link : links) {
@@ -3160,39 +3138,9 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     }
 
-    public void saveProjectPoerties(Hashtable prop, String dir) {
-        try {
-            FileOutputStream fos = new FileOutputStream(dir + FILE_SEPARATOR + "defaultProperties");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(prop);
-            oos.flush();
-            oos.close();
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+   
 
-    public Hashtable initProjectProperties(String dir) {
-        Hashtable defaultPropsForProjectLinks = new Hashtable();
-        File file = new File(dir + FILE_SEPARATOR + "defaultProperties");
-        if (!file.exists()) {
-
-            saveProjectPoerties(defaultPropsForProjectLinks, dir);
-
-        } else {
-            try {
-                FileInputStream fis = new FileInputStream(dir + FILE_SEPARATOR + "defaultProperties");
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                defaultPropsForProjectLinks = (Hashtable) ois.readObject();
-                ois.close();
-                fis.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return defaultPropsForProjectLinks;
-    }
+    
 
     public void initProperties() {
 
