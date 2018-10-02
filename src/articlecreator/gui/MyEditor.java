@@ -92,6 +92,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     private FileHistory fileHistory;
     private Hashtable actionTable = new Hashtable(), defaultProps = null;
     private Object selectedProjectItem;
+    private JTextArea console;
 
     public MyEditor() {
 
@@ -213,7 +214,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         hSplit.setMinimumSize(dim);
 
         // Initialize default console window for displaying program output
-        JTextArea console = new JTextArea();
+        console = new JTextArea();
         String setting = (String) defaultProps.get("SETTING");
         if (setting.equals("CUSTOM")) {
             customizeTextArea(console, "CUSTOM_CONSOLE");
@@ -243,6 +244,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         myUID.setColor(getLineColor((String) defaultProps.get("SETTING"), "CONSOLE"));
         console.setUI(myUID);
         console.addMouseListener(new ConsoleMouseListener(console, myUID, this));
+        console.setText("JUST TO TEST >>>>");
         consolesList.setSelectedIndex(0);
         consolesList.addListSelectionListener(new ConsoleListener());
         projectList.setSelectedIndex(0);
@@ -295,17 +297,17 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             dir = (String) savedProjJSON.get("dir");
             keyWords = (String) savedProjJSON.get("keyWords");
             Hashtable prop = initProjectProperties(dir);
-            saveLinksForKeyWords(dir,prop, keyWords);
+            saveLinksForKeyWords(dir, prop, keyWords);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
     }
 
-    private void saveLinksForKeyWords(String dir,Hashtable prop, String keyWords) {
+    private void saveLinksForKeyWords(String dir, Hashtable prop, String keyWords) {
         String[] keyWord = keyWords.split(",");
         for (int i = 0; i < keyWord.length; i++) {
-            extractLinksForKeyWord(prop,keyWord[i]);
+            extractLinksForKeyWord(prop, keyWord[i]);
             saveProjectPoerties(prop, dir);
         }
     }
@@ -323,9 +325,9 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             JSONObject mainObj = new JSONObject();
             JSONArray arrJSON = new JSONArray();
             for (org.jsoup.nodes.Element link : links) {
-                String title = link.text();
-                String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
-                url = URLDecoder.decode(url.substring(url.indexOf('=') + 1, url.indexOf('&')), "UTF-8");
+                final String title = link.text();
+              //  final String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
+                final String url = URLDecoder.decode(link.absUrl("href").substring(link.absUrl("href").indexOf('=') + 1, link.absUrl("href").indexOf('&')), "UTF-8");
 
                 if (!url.startsWith("http")) {
                     continue; // Ads/news/etc.
@@ -334,11 +336,20 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
                 o.put("title", title);
                 o.put("URL", url);
                 arrJSON.add(o);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        console.append("Title: " + title + "\r\n");
+                        console.append("URL: " + url + "\r\n");
+                        console.update(console.getGraphics());
+                    }
+                });
+
                 System.out.println("Title: " + title);
                 System.out.println("URL: " + url);
             }
             mainObj.put(keyWord, arrJSON);
-           // JSONParser parser  =new JSONParser();
+            // JSONParser parser  =new JSONParser();
             prop.put(keyWord, arrJSON.toJSONString());
             //.    get().select(".g>.r>a");
 
@@ -1412,12 +1423,13 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         public void actionPerformed(ActionEvent e) {
             if (projectList.getSelectedValue() != null) {
                 final Object selectedProject = projectList.getSelectedValue();
-                new Thread(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         runProject(selectedProject);
                     }
                 });
+
             }
         }
 
@@ -2366,7 +2378,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         JMenuItem menuItem = new JMenuItem();
         menuItem.setAction(deleteAction);
         popupProj.add(menuItem);
-        
+
         menuItem = new JMenuItem();
         menuItem.setAction(new RunProjectAction());
         popupProj.add(menuItem);
