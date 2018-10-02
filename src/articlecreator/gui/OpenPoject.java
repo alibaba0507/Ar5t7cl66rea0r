@@ -15,6 +15,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,11 +32,13 @@ public class OpenPoject extends javax.swing.JPanel {
     private JFileChooser chooser;
     public static final String CURRENT_DIR = System.getProperty("user.dir");
     private ProjectItem selectedObj;
+    private MyEditor editor;
     /**
      * Creates new form OpenPoject
      */
-    public OpenPoject(DefaultListModel projectListModel, JList projectList,Object selectedObject) {
+    public OpenPoject(DefaultListModel projectListModel, JList projectList,Object selectedObject,MyEditor editor) {
         super();
+        this.editor = editor;
         this.projectList = projectList;
         this.projectListModel = projectListModel;
         chooser = new JFileChooser(CURRENT_DIR);
@@ -58,24 +61,26 @@ public class OpenPoject extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        txtProjName = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel1 = new javax.swing.JPanel();
+        btnCancelProject = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        txtProjectDirectory = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtKeyWords = new javax.swing.JTextArea();
-        jLabel5 = new javax.swing.JLabel();
-        txtProjectDirectory = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
         btnProjectFileChooser = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
         btnProjectSave = new javax.swing.JButton();
-        btnCancelProject = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        txtProjName = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
 
-        jLabel1.setText("Project Name");
-
-        jLabel2.setText("KeyWords");
-
-        jLabel3.setText("One Per Line");
+        btnCancelProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Stop24.gif"))); // NOI18N
+        btnCancelProject.setText("Cancel");
 
         jLabel4.setText("Or comma separated");
 
@@ -86,7 +91,7 @@ public class OpenPoject extends javax.swing.JPanel {
         txtKeyWords.getAccessibleContext().setAccessibleName("");
         txtKeyWords.getAccessibleContext().setAccessibleDescription("");
 
-        jLabel5.setText("Saved Directory");
+        jLabel1.setText("Project Name");
 
         btnProjectFileChooser.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Open24.gif"))); // NOI18N
         btnProjectFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -94,6 +99,8 @@ public class OpenPoject extends javax.swing.JPanel {
                 btnProjectFileChooserActionPerformed(evt);
             }
         });
+
+        jLabel2.setText("KeyWords");
 
         btnProjectSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save24.gif"))); // NOI18N
         btnProjectSave.setText("Save");
@@ -103,8 +110,113 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         });
 
-        btnCancelProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Stop24.gif"))); // NOI18N
-        btnCancelProject.setText("Cancel");
+        jLabel5.setText("Saved Directory");
+
+        jLabel3.setText("One Per Line");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 500, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGap(75, 75, 75))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addComponent(jLabel3))
+                            .addGap(133, 133, 133)))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(txtProjectDirectory)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(btnProjectFileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addGap(9, 9, 9)
+                                    .addComponent(btnProjectSave)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnCancelProject)))
+                            .addGap(23, 23, 23))
+                        .addComponent(jScrollPane1)
+                        .addComponent(txtProjName))
+                    .addContainerGap()))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 262, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel1)
+                        .addComponent(txtProjName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(27, 27, 27)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jLabel3)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jLabel4))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(20, 20, 20)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel5)
+                                .addComponent(txtProjectDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGap(18, 18, 18)
+                            .addComponent(btnProjectFileChooser)))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(btnCancelProject)
+                        .addComponent(btnProjectSave))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+
+        jTabbedPane1.addTab("tab1", jPanel1);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+                {null, null, null, null}
+            },
+            new String [] {
+                "Key Words", "Title", "URL", "Words Count"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable1);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        jTabbedPane1.addTab("tab2", jPanel2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -112,101 +224,34 @@ public class OpenPoject extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(75, 75, 75))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtProjectDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
-                                .addGap(18, 18, 18)
-                                .addComponent(btnProjectFileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
-                                .addComponent(btnProjectSave)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 90, Short.MAX_VALUE)
-                                .addComponent(btnCancelProject)))
-                        .addGap(35, 35, 35))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtProjName, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                        .addContainerGap())))
+                .addComponent(jTabbedPane1)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(txtProjName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(txtProjectDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(btnProjectFileChooser)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnCancelProject)
-                    .addComponent(btnProjectSave))
-                .addGap(23, 23, 23))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-   private void parseSelectedObject()
-   {
-       if (selectedObj == null)
-           return;
-       JSONParser parser = new JSONParser();
-            try {
-                JSONObject p = (JSONObject) parser.parse(selectedObj.getJSONObject());
-                txtProjName.setText((String) p.get("name"));
-                txtKeyWords.setText((String)p.get("keyWords"));
-                txtProjectDirectory.setText((String) p.get("dir" ));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-   }
+
     private void btnProjectSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectSaveActionPerformed
 
         String projName, keyWords, dir;
         if (txtProjName.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter valid Project Name",
-                    "Save Project", JOptionPane.ERROR_MESSAGE);
+                "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (txtKeyWords.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter KeyWords",
-                    "Save Project", JOptionPane.ERROR_MESSAGE);
+                "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (txtProjectDirectory.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter Project Directory",
-                    "Save Project", JOptionPane.ERROR_MESSAGE);
+                "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -274,7 +319,48 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         }  // End while
     }//GEN-LAST:event_btnProjectFileChooserActionPerformed
-
+ 
+    private void parseSelectedObject()
+   {
+       if (selectedObj == null)
+           return;
+       JSONParser parser = new JSONParser();
+            try {
+                JSONObject p = (JSONObject) parser.parse(selectedObj.getJSONObject());
+                txtProjName.setText((String) p.get("name"));
+                txtKeyWords.setText((String)p.get("keyWords"));
+                txtProjectDirectory.setText((String) p.get("dir" ));
+                DefaultTableModel tableModel = (DefaultTableModel) jTable1.getModel();
+                for (int i = 0;i < tableModel.getRowCount();i++)
+                {
+                    tableModel.removeRow(0);
+                }
+                jTable1.getColumnModel().getColumn(0).setPreferredWidth(20);
+                jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
+                jTable1.getColumnModel().getColumn(2).setPreferredWidth(350);
+                jTable1.getColumnModel().getColumn(3).setPreferredWidth(10);
+                Hashtable prop = editor.initProjectProperties((String) p.get("dir" ));
+                Iterator it = prop.keySet().iterator();
+                while (it.hasNext())
+                {
+                    String keyWord = (String)it.next();
+                    String jsonString = (String)prop.get(keyWord);
+                    JSONParser tableParser = new JSONParser();
+                    JSONArray arr = (JSONArray)  tableParser.parse(jsonString);
+                    Iterator jsonIt=  arr.iterator();
+                    while(jsonIt.hasNext())
+                    {
+                        JSONObject ob = (JSONObject)jsonIt.next();
+                        String wordCnt = (String)ob.get("wordCnt");
+                        if (wordCnt == null) wordCnt = "";
+                        String[] values = {keyWord,(String)ob.get("title"),(String)ob.get("URL"),wordCnt};
+                        tableModel.addRow(values);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+   }
     public void reloadProjectTree() {
         if (projectListModel == null) {
             return;
@@ -337,7 +423,12 @@ public class OpenPoject extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTable jTable1;
     private javax.swing.JTextArea txtKeyWords;
     private javax.swing.JTextField txtProjName;
     private javax.swing.JTextField txtProjectDirectory;

@@ -13,6 +13,7 @@ package articlecreator.gui;
  * uses (in any way, shape or form) code contained in this file.
  */
 import articlecreator.HttpUrlConnectionExample;
+import articlecreator.ParseHTMLArticles;
 import articlecreator.gui.dl.*;
 
 import java.io.*;
@@ -93,6 +94,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
     private Hashtable actionTable = new Hashtable(), defaultProps = null;
     private Object selectedProjectItem;
     private JTextArea console;
+    private boolean hasStartProcess;
 
     public MyEditor() {
 
@@ -283,6 +285,67 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         setBounds(0, 0, screenSize.width, screenSize.height - 50);
         reloadProjectTree();
 
+        hasStartProcess = true;
+        java.util.Timer t = new java.util.Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    while (hasStartProcess) {
+                        startProcess();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 200, 500);
+
+    }
+
+    private void startProcess() throws Exception {
+
+        String projProperties = (String) defaultProps.get("PROJECTS");
+        if (projProperties == null || projProperties.isEmpty()) {
+            return;
+        }
+        JSONParser parser = new JSONParser();
+        JSONArray projectsJSON = null;
+        JSONObject savedProjJSON = null;
+
+        savedProjJSON = (JSONObject) parser.parse(projProperties);
+        projectsJSON = (JSONArray) savedProjJSON.get("prj");
+        Iterator<JSONObject> objs = projectsJSON.iterator();
+
+        while (objs.hasNext()) {
+            JSONObject p = (JSONObject) objs.next();
+            String dir = ((String) p.get("dir"));
+            Hashtable prop = initProjectProperties(dir);
+            loadArticles(prop, dir);
+        }// end while
+        Thread.currentThread().yield();
+        //Thread.currentThread().sleep(500);
+
+    }
+
+    private void loadArticles(Hashtable prop, String dir) throws Exception {
+        Iterator it = prop.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String) it.next();
+            String value = (String) prop.get(key);
+            JSONParser p = new JSONParser();
+            JSONArray arr = (JSONArray) p.parse(value);
+            Iterator valueIt = arr.iterator();
+            int cnt = 1;
+            while (valueIt.hasNext()) {
+                JSONObject o = (JSONObject) valueIt.next();
+                String wordCnt = (String) o.get("wordCnt");
+                if (wordCnt == null) {
+                    extractTextFromArticle((String) o.get("URL"), cnt, dir);
+                }
+                cnt++;
+            }
+            console.append("\r\n>>>> KEY[" + key + "] VAL[" + value + "] >>>>");
+        }
     }
 
     private void runProject(Object selectedProject) {
@@ -312,6 +375,26 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
     }
 
+    private void extractTextFromArticle(String url, int cnt, String dir) {
+        String charset = "UTF-8";
+        String userAgent = USER_AGENT; // Change this to your company's name and bot homepage!
+        try {
+            URL u = new URL(url);
+            
+            String baseUri = (new StringBuilder())
+            .append(u.getProtocol())
+            .append("://")
+            .append(u.getHost())
+            .toString();
+            /*
+             org.jsoup.nodes.Document doc = ParseHTMLArticles.connectAsBrowser(url);
+             ParseHTMLArticles.parse(doc, dir, cnt,baseUri);
+        */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void extractLinksForKeyWord(Hashtable prop, String keyWord) {
         try {
             String urlSearch = (String) defaultProps.get("SEARCH_ENGINE");
@@ -326,7 +409,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
             JSONArray arrJSON = new JSONArray();
             for (org.jsoup.nodes.Element link : links) {
                 final String title = link.text();
-              //  final String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
+                //  final String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
                 final String url = URLDecoder.decode(link.absUrl("href").substring(link.absUrl("href").indexOf('=') + 1, link.absUrl("href").indexOf('&')), "UTF-8");
 
                 if (!url.startsWith("http")) {
@@ -2243,7 +2326,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         }
 
         MyInternalFrame jif = new MyInternalFrame(title, true, true, true, true);
-        OpenPoject proj = new OpenPoject(projectListModel, projectList, selectedProjectItem);
+        OpenPoject proj = new OpenPoject(projectListModel, projectList, selectedProjectItem, this);
 
         proj.setDefaultProperties(defaultProps);
         // Create undo manager for textArea
@@ -2815,7 +2898,8 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
         boolean fileAlreadyOpen = false;
         JInternalFrame array[] = desktop.getAllFrames();
         for (int i = 0; i < array.length; i++) {
-            if (((MyInternalFrame) array[i]).getFile().getPath().equalsIgnoreCase(path)) {
+            if (((MyInternalFrame) array[i]).getFile() != null
+                    && ((MyInternalFrame) array[i]).getFile().getPath().equalsIgnoreCase(path)) {
                 fileAlreadyOpen = true;
                 break;
             }
