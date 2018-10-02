@@ -81,6 +81,7 @@ public class OpenPoject extends javax.swing.JPanel {
 
         txtKeyWords.setColumns(20);
         txtKeyWords.setRows(5);
+        txtKeyWords.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
         jScrollPane1.setViewportView(txtKeyWords);
         txtKeyWords.getAccessibleContext().setAccessibleName("");
         txtKeyWords.getAccessibleContext().setAccessibleDescription("");
