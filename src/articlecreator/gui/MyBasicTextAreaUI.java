@@ -11,7 +11,7 @@ import java.util.*;
 // Last Modified: 22/04/2002
 // Author: Samuel Huang
 
-class MyBasicTextAreaUI extends BasicTextAreaUI {
+public class MyBasicTextAreaUI extends BasicTextAreaUI {
 
 	private JTextArea textArea;
 	private ArrayList positions = new ArrayList();

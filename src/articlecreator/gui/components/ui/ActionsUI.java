@@ -5,19 +5,44 @@
  */
 package articlecreator.gui.components.ui;
 
+import articlecreator.gui.MyBasicTextAreaUI;
 import articlecreator.gui.MyInternalFrame;
 import articlecreator.gui.components.OpenPoject;
+import articlecreator.net.ConnectionManagerUI;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
+
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.InternalFrameUI;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -37,11 +62,10 @@ public class ActionsUI {
     };
 
     public javax.swing.Action newProject, openProject,
-            openFile, saveFile, saveFileAs, exitAction, 
-            cutAction, copyAction, pasteAction, 
-            findAndReplaceAction, deletAection, undoAction, redoAction, 
-            selectAll, stopAction, tipsAction, aboutAction,readMeAction
-            ,runProjectAction;
+            openFile, saveFile, saveFileAs, exitAction,
+            cutAction, copyAction, pasteAction,
+            findAndReplaceAction, deletAection, undoAction, redoAction,
+            selectAll, stopAction, tipsAction, aboutAction, readMeAction, runProjectAction;
 
     public ActionsUI() {
         initActions();
@@ -54,7 +78,7 @@ public class ActionsUI {
     public void openProjectFile(final File file, String title) {
         JInternalFrame frame = null;
         try {
-            frame = InterFamesUI.getInstance().ceateProjectFrame(file, title);
+            frame = InnerFramesUI.getInstance().ceateProjectFrame(file, title);
             frame.moveToFront();
             frame.setMaximum(true);
             frame.setSelected(true);
@@ -273,7 +297,7 @@ public class ActionsUI {
 
     public class RedoAction extends AbstractAction {
 
-        public RedoAction () {
+        public RedoAction() {
             super("Redo", new ImageIcon(AWTUtils.getIcon(null, "/images/Redo24.gif")));
         }
 
@@ -312,8 +336,7 @@ public class ActionsUI {
 
         }
     } // End NewAction
-    
-    
+
     public class TipsAction extends AbstractAction {
 
         public TipsAction() {
@@ -328,8 +351,6 @@ public class ActionsUI {
         }
     } // End NewAction
 
-    
-    
     public class ReadMeAction extends AbstractAction {
 
         public ReadMeAction() {
@@ -344,31 +365,32 @@ public class ActionsUI {
         }
     } // End NewAction
 
-    class RunProjectAction extends AbstractAction {
+    public class RunProjectAction extends AbstractAction {
 
-        RunProjectAction() {
+        public RunProjectAction() {
             super("Run Project", new ImageIcon(AWTUtils.getIcon(null, "/images/Compile24.gif")));
 
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            
+
             if (ProjectsUI.projectList.getSelectedValue() != null) {
                 final Object selectedProject = ProjectsUI.projectList.getSelectedValue();
-                SwingUtilities.invokeLater(new Runnable() {
+                ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
+                stpe.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
                         runProject(selectedProject);
                     }
-                });
+                }, 0, 0, TimeUnit.SECONDS);
 
             }
         }
 
     }
 
-     private void runProject(Object selectedProject) {
+    private void runProject(Object selectedProject) {
         ProjectItem item = (ProjectItem) selectedProject;
 
         JSONParser parser = new JSONParser();
@@ -386,15 +408,350 @@ public class ActionsUI {
             return;
         }
     }
-     
-      private void saveLinksForKeyWords(String dir, Hashtable prop, String keyWords) {
+
+    private void saveLinksForKeyWords(String dir, Hashtable prop, String keyWords) {
         String[] keyWord = keyWords.split(",");
+        ConnectionManagerUI con = new ConnectionManagerUI();
         for (int i = 0; i < keyWord.length; i++) {
-            extractLinksForKeyWord(prop, keyWord[i]);
-            saveProjectPoerties(prop, dir);
+            try {
+                con.searchForLinks(prop, keyWords, null);
+                PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
+                //saveProjectPoerties(prop, dir);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
+
+    // Double click on 'Marked Lines:' label clears all marked lines
+    // of current text area.
+    public class LinesMouseListener extends MouseAdapter {
+
+        private JList markedLinesList;
+
+        public LinesMouseListener(JList markedLinesList) {
+            super();
+            this.markedLinesList = markedLinesList;
+        }
+
+        public void mousePressed(MouseEvent e) {
+            int click = e.getClickCount();
+            if (click == 2) {
+                MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
+                if (frame == null) {
+                    return;
+                }
+                JTextArea textArea = frame.getJTextArea();
+                MyBasicTextAreaUI myUI = (MyBasicTextAreaUI) textArea.getUI();
+                myUI.setPositions(new ArrayList());
+                DefaultListModel model = (DefaultListModel) markedLinesList.getModel();
+                model.clear();
+                textArea.repaint(); // Reflect changes
+            }
+        }
+    }
+
+    // Listener for JList markedLinesList
+    //
+    public class MarkedLinesListener implements ListSelectionListener {
+
+        private JList markedLinesList;
+
+        public MarkedLinesListener(JList markedLinesList) {
+            super();
+            this.markedLinesList = markedLinesList;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            int i = markedLinesList.getSelectedIndex();
+            if (i != -1) {
+                MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
+                if (frame != null) {
+                    JScrollPane jsp = frame.getScrollPane();
+                    JViewport vp = jsp.getViewport();
+                    JTextArea textArea = frame.getJTextArea();
+                    int h = textArea.getFontMetrics(textArea.getFont()).getHeight();
+                    String item = (String) markedLinesList.getSelectedValue();
+                    item = item.substring(item.lastIndexOf(" ") + 1);
+                    Integer Int = new Integer(item);
+                    int n = Int.intValue();
+                    Point p = new Point(0, h * (n - 1));
+                    vp.setViewPosition(p);
+                    frame.show();
+                }
+            }
+        }
+    }
+
+    // Enable copy action when console has selected text.
+    public class ConsoleCaretListener implements CaretListener {
+
+        JTextArea textArea;
+
+        public ConsoleCaretListener(JTextArea textArea) {
+            this.textArea = textArea;
+            ProjectsUI.console = this.textArea;
+        }
+
+        public void caretUpdate(CaretEvent e) {
+            cutAndCopy(textArea);
+        }
+    }
+
+    public void cutAndCopy(JTextArea textArea) {
+        try {
+            String s = textArea.getSelectedText();
+            if (s == null) {
+                cutAction.setEnabled(false);
+                copyAction.setEnabled(false);
+            } else {
+                cutAction.setEnabled(true);
+                copyAction.setEnabled(true);
+            }
+        } catch (IllegalArgumentException iae) {
+            iae.printStackTrace();
+        }
+    }
+
+    public class ConsoleListener implements ListSelectionListener {
+
+        private JList consolesList;
+        private ArrayList outputList;
+        private  JViewport viewport;
+        public ConsoleListener(JList consolesList, ArrayList outputList,JViewport viewport) {
+            super();
+            this.consolesList = consolesList;
+            this.outputList = outputList;
+            this.viewport = viewport;
+        }
+
+        public void valueChanged(ListSelectionEvent e) {
+            int i = consolesList.getSelectedIndex();
+            if (i == -1) // Returns if list empty
+            {
+                return;
+            }
+            ArrayList al = (ArrayList) outputList.get(i);
+            JTextArea console = (JTextArea) al.get(1);
+            console.setCaretPosition(console.getText().length());
+            updateStopAction(this.consolesList,outputList,viewport);
+
+            // Update buttons of font style if radioButton is selected.
+           /* if (radioButton.isSelected()) {
+
+                Font font = console.getFont();
+                String fontName = font.getName();
+                int fontSize = font.getSize();
+                if (font.isBold()) {
+                    boldButton.setSelected(true);
+                } else {
+                    boldButton.setSelected(false);
+                }
+                if (font.isItalic()) {
+                    italicButton.setSelected(true);
+                } else {
+                    italicButton.setSelected(false);
+                }
+                cbFonts.setSelectedItem(fontName);
+                cbSizes.setSelectedItem(Integer.toString(fontSize));
+
+            }  // if
+             */
+        }  // valueChanged
+    }
+
+    public void updateStopAction( JList consolesList,ArrayList outputList,JViewport viewport) {
+        int i = consolesList.getSelectedIndex();
+        if (i != -1) {
+            ArrayList list = (ArrayList) outputList.get(i);
+            JTextArea console = (JTextArea) list.get(1);
+            viewport.setView(console);
+            if (list.get(2) == null) {
+                stopAction.setEnabled(false);
+            } else {
+                stopAction.setEnabled(true);
+            }
+        }
+    }
+    
+    
+     // Listener for JList consolesList. Each item of the consolesList is an
+    // ArrayList such that:
+    //	 item.get(0) == Boolean
+    //	 item.get(1) == JTextArea
+    //	 item.get(2) == Process/null
+    //    item.get(3) == Run/Build thread
+    public class ProjectListener implements ListSelectionListener {
+        private JList projectList;
+        private Object selectedProjectItem;
+        public ProjectListener(JList projectList,Object selectedProjectItem)
+        {
+            super();
+            this .projectList = projectList;
+            this.selectedProjectItem = selectedProjectItem;
+            
+        }
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            int i = projectList.getSelectedIndex();
+            if (i == -1) // Returns if list empty
+            {
+                return;
+            }
+            selectedProjectItem = projectList.getSelectedValue();
+
+        }
+
+    }
+
+    
+  public class ClearAction extends AbstractAction {
+        private JList consolesList;
+        private ArrayList outputList;
+      public ClearAction(JList consolesList,ArrayList outputList)
+      {
+       super();
+       this.consolesList = consolesList;
+       this.outputList = outputList;
+      }
+        public void actionPerformed(ActionEvent e) {
+            int i = consolesList.getSelectedIndex();
+            ArrayList al = (ArrayList) outputList.get(i);
+            JTextArea console = (JTextArea) al.get(1);
+            MyBasicTextAreaUI myUI = (MyBasicTextAreaUI) console.getUI();
+            myUI.setPositions(new ArrayList()); // Clear highlighted lines 
+            console.setText("");
+        }
+    }
+
+    // Caret listener that updates status labels of each file
+    //
   
+  
+   class GoAction extends AbstractAction {
+     private JTextField goToLine;
+        GoAction(JTextField goToLine) {
+            setEnabled(false);
+            this.goToLine = goToLine;
+        }
 
+        public void actionPerformed(ActionEvent e) {
+            MyInternalFrame frame = InnerFramesUI.getInstance(). getSelectedFrame();
+            if (frame == null) {
+                setEnabled(false);
+                return;
+            }
+            JTextArea jta = frame.getJTextArea();
+            JScrollPane jsp = frame.getScrollPane();
+            JViewport vp = jsp.getViewport();
+            int h = jta.getFontMetrics(jta.getFont()).getHeight();
+            Point p = new Point();
+            p.x = 0;
+            int line = 1;
+            try {
+                line = Integer.parseInt(goToLine.getText());
+            } catch (NumberFormatException nfe) {
+               // invalidInput();
+            //    transferFocusToTextArea();
+                return;
+            }
+            int totalLines = jta.getLineCount();
+            if (totalLines == 0 || line < 1) {
+                p.y = 0;
+            } else if (line > totalLines) {
+                p.y = h * (totalLines - 1);
+            } else {
+                p.y = h * (line - 1);
+            }
+            vp.setViewPosition(p);
+            jta.setCaretPosition(jta.viewToModel(p));
+            // revalidate() does the trick of clearing abnormal drawing if
+            // p is in the last line
+            jta.revalidate();
+            //transferFocusToTextArea();
+        }
+    }
+   
+   
+   
+    class TabAction extends AbstractAction {
+  private JTextField tabField;
+        TabAction(JTextField tabField) {
+            setEnabled(false);
+            this.tabField = tabField;
+        }
 
+        public void actionPerformed(ActionEvent e) {
+            MyInternalFrame frame = InnerFramesUI.getInstance(). getSelectedFrame();
+            if (frame == null) {
+                setEnabled(false);
+                return;
+            }
+            int tabSize = 0;
+            try {
+                tabSize = Integer.parseInt(tabField.getText());
+                if (tabSize < 1) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException nfe) {
+               // invalidInput();
+              //  transferFocusToTextArea();
+                return;
+            }
+            JTextArea jta = frame.getJTextArea();
+            jta.setTabSize(tabSize);
+            jta.setUI(jta.getUI()); // Fix JTextArea.setTabSize() bug
+            //transferFocusToTextArea();
+        }
+    }
+    
+    
+    public class MyWindowListener extends WindowAdapter {
+        private JDesktopPane desktop;
+        private JFrame frm;
+        public MyWindowListener(JDesktopPane desktop,JFrame frm)
+        {
+            super();
+            this.desktop = desktop;
+            this.frm = frm;
+        }
+        public void windowClosing(WindowEvent e) {
+            closeEditor(desktop,frm);
+        }
+    }   // End MyWindowListener
+// Close all frames displayed in desktop. Showed a nice trick of using
+    // PropertyVetoException to check each file before closing. Check 
+    // CloseListener for how.
+    //
+    public void closeEditor(JDesktopPane desktop,JFrame frm) {
+
+        JInternalFrame jif[] = desktop.getAllFrames();
+        for (int i = 0; i < jif.length; i++) {
+            try {
+                jif[i].setClosed(true);
+            } catch (PropertyVetoException pve) {
+                // Exception caught when closing event vetoed.
+            }
+        }
+        int size = desktop.getAllFrames().length;
+        if (size == 0) {
+            exit(frm);
+        }
+
+    }   // End closeEditor
+
+    
+     private void exit(JFrame frm) {
+        frm.setVisible(false);
+        // Clean up unwanted resource
+        frm.dispose();
+       // findDialog.dispose();
+        //commandDialog.dispose();
+        //optionDialog.dispose();
+
+        //fileHistory.saveHistoryEntries(); // save entries for next session
+        //saveProperties();
+        Toolkit.getDefaultToolkit().beep();
+        System.exit(0);
+    }
 }

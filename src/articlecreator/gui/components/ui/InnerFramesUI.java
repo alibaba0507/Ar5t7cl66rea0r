@@ -13,27 +13,28 @@ import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
-
 /**
  *
  * @author alibaba0507
  */
-public class InterFamesUI {
-    private static InterFamesUI interFamesInstance;
+public class InnerFramesUI {
+
+    private static InnerFramesUI interFamesInstance;
     private JDesktopPane desktop;
-     public InterFamesUI(JDesktopPane desktop)
-     {
-          super();
-         this.desktop = desktop;
-         if (interFamesInstance == null)
-             interFamesInstance = this;
-     }
-     
-     public static InterFamesUI getInstance()
-     {
-         return interFamesInstance;
-     }
-     public JInternalFrame ceateProjectFrame( File file, String title) {
+
+    public InnerFramesUI(JDesktopPane desktop) {
+        super();
+        this.desktop = desktop;
+        if (interFamesInstance == null) {
+            interFamesInstance = this;
+        }
+    }
+
+    public static InnerFramesUI getInstance() {
+        return interFamesInstance;
+    }
+
+    public JInternalFrame ceateProjectFrame(File file, String title) {
 
         if (title == null && ProjectsUI.selectedProjectItem == null) {
             title = "New Project";
@@ -49,10 +50,10 @@ public class InterFamesUI {
             }
         }
 
-         MyInternalFrame jif = new MyInternalFrame(title, true, true, true, true);
-         OpenPoject proj = new OpenPoject();
-        
-         JScrollPane scroller = new JScrollPane(proj, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+        MyInternalFrame jif = new MyInternalFrame(title, true, true, true, true);
+        OpenPoject proj = new OpenPoject();
+
+        JScrollPane scroller = new JScrollPane(proj, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         // Decorate jif 		
@@ -71,5 +72,8 @@ public class InterFamesUI {
         return jif;
     }
 
-    
+    public MyInternalFrame getSelectedFrame() {
+        return (MyInternalFrame) desktop.getSelectedFrame();
+    }
+
 }

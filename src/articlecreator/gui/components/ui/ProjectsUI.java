@@ -7,6 +7,7 @@ package articlecreator.gui.components.ui;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -16,4 +17,5 @@ public class ProjectsUI {
     public static Object selectedProjectItem;
     public static DefaultListModel projectListModel;
     public static JList projectList;
+    public static JTextArea console;
 }

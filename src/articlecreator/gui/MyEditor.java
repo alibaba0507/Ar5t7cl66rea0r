@@ -125,7 +125,7 @@ public class MyEditor extends JFrame implements FileHistory.IFileHistory {
 
         // Make dragging faster:
         desktop.putClientProperty("JDesktopPane.dragMode", "outline");
-
+      
         consolesList = new JList();
         consolesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         consolesListModel = new DefaultListModel();

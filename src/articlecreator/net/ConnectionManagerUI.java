@@ -6,6 +6,7 @@
 package articlecreator.net;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -94,11 +95,23 @@ public class ConnectionManagerUI {
             } else {
                 JSONObject mainObj = new JSONObject();
                 JSONArray arrJSON = new JSONArray();
-                for (org.jsoup.nodes.Element link : links) 
-                {
-                    
+                for (org.jsoup.nodes.Element link : links) {
+                    final String title = link.text();
+                    //  final String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
+                    final String url = URLDecoder.decode(link.absUrl("href").substring(link.absUrl("href").indexOf('=') + 1, link.absUrl("href").indexOf('&')), "UTF-8");
+
+                    if (!url.startsWith("http")) {
+                        continue; // Ads/news/etc.
+                    }
+                    JSONObject o = new JSONObject();
+                    o.put("title", title);
+                    o.put("URL", url);
+                    arrJSON.add(o);
                 }
-                }
+                mainObj.put(keyWord, arrJSON);
+            // JSONParser parser  =new JSONParser();
+            prop.put(keyWord, arrJSON.toJSONString());
             }
         }
     }
+}

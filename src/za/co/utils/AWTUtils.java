@@ -187,7 +187,11 @@ public class AWTUtils
      */
     public static Image getIcon(Component component, String path)
     {
-        URL url = component.getClass().getResource(path);
+         URL url = null;
+        if (component == null)
+            url = AWTUtils.class.getResource(path);
+        else
+          url = component.getClass().getResource(path);
         return getIcon(component, url);
     }
 
