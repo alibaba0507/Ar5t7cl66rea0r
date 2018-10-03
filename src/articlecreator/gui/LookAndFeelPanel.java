@@ -16,6 +16,7 @@ package articlecreator.gui;
  *  or form) code contained in this file. 
  */
 
+import articlecreator.gui.components.ui.PropertiesUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;     
@@ -32,14 +33,14 @@ class LookAndFeelPanel extends JPanel {
 
   
   private JRadioButton javaRadio, systemRadio, mortifRadio;
-  private MyEditor myEditor;
+  //private MyEditor myEditor;
   private Hashtable defaultProps;
  
-  public LookAndFeelPanel( MyEditor myEditor )
+  public LookAndFeelPanel(  )
   {
 	   
-	    this.myEditor = myEditor;
-       defaultProps = myEditor.getDefaultProps();
+	   // this.myEditor = myEditor;
+       defaultProps = PropertiesUI.getInstance().getDefaultProps();// myEditor.getDefaultProps();
 	    setLayout(new BorderLayout() );
 
        javaRadio = new JRadioButton();

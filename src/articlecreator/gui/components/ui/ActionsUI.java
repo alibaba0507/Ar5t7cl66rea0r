@@ -7,6 +7,7 @@ package articlecreator.gui.components.ui;
 
 import articlecreator.gui.MyBasicTextAreaUI;
 import articlecreator.gui.MyInternalFrame;
+import articlecreator.gui.components.LinksObject;
 import articlecreator.gui.components.OpenPoject;
 import articlecreator.net.ConnectionManagerUI;
 import java.awt.Font;
@@ -24,6 +25,7 @@ import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
@@ -44,6 +46,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.InternalFrameUI;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import za.co.utils.AWTUtils;
@@ -89,6 +92,9 @@ public class ActionsUI {
 
     // Show a confirmation dialog before closing a file
     public int closingCheck(MyInternalFrame frame) {
+        if (frame == null || frame.getFile() == null) {
+            return -1;
+        }
         String s = frame.getFile().getPath();
         message[0] = "Project " + s + " has changed";
         return JOptionPane.showConfirmDialog(
@@ -144,8 +150,10 @@ public class ActionsUI {
 
     public class NewAction extends AbstractAction {
 
+        //private static ActionsUI.NewAction instance;
         public NewAction() {
             super("New Project", new ImageIcon(AWTUtils.getIcon(null, "/images/newProject.jpg")));
+            // new Throwable().printStackTrace();
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -158,7 +166,7 @@ public class ActionsUI {
     public class OpenAction extends AbstractAction {
 
         public OpenAction() {
-            super("Open File", new ImageIcon(AWTUtils.getIcon(null, "/images/openFile24.jpg")));
+            super("Open File", new ImageIcon(AWTUtils.getIcon(null, "/images/openFile24.png")));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -340,7 +348,7 @@ public class ActionsUI {
     public class TipsAction extends AbstractAction {
 
         public TipsAction() {
-            super("Tips", new ImageIcon(AWTUtils.getIcon(null, "/images/TipsOfTheDay24.gif")));
+            super("Tips", new ImageIcon(AWTUtils.getIcon(null, "/images/TipOfTheDay24.gif")));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -364,7 +372,66 @@ public class ActionsUI {
 
         }
     } // End NewAction
+    
+    public class ExtractArticlesAction extends AbstractAction{
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+         ScheduledThreadPoolExecutor t = new ScheduledThreadPoolExecutor(5);
+         t.scheduleAtFixedRate(new Runnable() {
+             @Override
+             public void run() {
+               extractArticles();
+             }
+         }, 1, 1, TimeUnit.SECONDS);
+        }
+    }
+    
+    private void extractArticles()
+    {
+         String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
+        if (projProperties == null || projProperties.isEmpty()) {
+            return; // nothing to do
+        }
+         JSONObject savedProjJSON = new JSONObject();
+        JSONParser parser = new JSONParser();
+        try {
+            savedProjJSON = (JSONObject) parser.parse(projProperties);
+            JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
+            Iterator<JSONObject> objs = projectsJSON.iterator();
+            int selectedIndex = 0;
+            int cnt = 0;
+            while (objs.hasNext()) {
+                final JSONObject p = (JSONObject) objs.next();
+                String dir = (String) p.get("dir");
+                
+                // key = keyWord , value = array of LinkObject
+                Hashtable dirProp = PropertiesUI.getInstance().initProjectProperties(dir);
+                Iterator it = dirProp.keySet().iterator();
+                while (it.hasNext())
+                {
+                 ArrayList l = (ArrayList)dirProp.get(it.next());
+                 for (int i = 0;i < l.size();i++)
+                 {
+                     LinksObject link = (LinksObject)l.get(i);
+                     if (link.getWordCount() == null || link.getWordCount().equals(""))
+                     {
+                         processArticle(link);
+                     }
+                 }// end for
+                }// end while
+            }
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    private void  processArticle(LinksObject link) throws Exception
+    {
+        ConnectionManagerUI con = new ConnectionManagerUI();
+        con.processArticle(link);
+    }
     public class RunProjectAction extends AbstractAction {
 
         public RunProjectAction() {
@@ -378,12 +445,12 @@ public class ActionsUI {
             if (ProjectsUI.projectList.getSelectedValue() != null) {
                 final Object selectedProject = ProjectsUI.projectList.getSelectedValue();
                 ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
-                stpe.scheduleAtFixedRate(new Runnable() {
+                stpe.schedule(new Runnable() {
                     @Override
                     public void run() {
                         runProject(selectedProject);
                     }
-                }, 0, 0, TimeUnit.SECONDS);
+                }, 1, TimeUnit.SECONDS);
 
             }
         }
@@ -399,10 +466,14 @@ public class ActionsUI {
         String keyWords = "";
         try {
             JSONObject savedProjJSON = (JSONObject) parser.parse(item.getJSONObject());
+            String name = (String) savedProjJSON.get("name");
             dir = (String) savedProjJSON.get("dir");
             keyWords = (String) savedProjJSON.get("keyWords");
-            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(dir);
+            Hashtable prop = new Hashtable();//PropertiesUI.getInstance().initProjectProperties(dir);
+            PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
+            ProjectsUI.console.append(" Starting Extraction of Links for " + name + "\r\n");
             saveLinksForKeyWords(dir, prop, keyWords);
+            InnerFramesUI.getInstance().refreshLinkByFrameName(name);
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -414,13 +485,19 @@ public class ActionsUI {
         ConnectionManagerUI con = new ConnectionManagerUI();
         for (int i = 0; i < keyWord.length; i++) {
             try {
-                con.searchForLinks(prop, keyWords, null);
-                PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
-                //saveProjectPoerties(prop, dir);
+                synchronized (this) {
+                    ProjectsUI.console.append(" -- Extractiong Links for --> " + keyWord[i] + " ....\r\n");
+                    ArrayList res = con.searchForLinks( keyWord[i], null);
+                    prop.put(keyWord[i], res);
+                    wait(800);
+                }
+//saveProjectPoerties(prop, dir);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
+        ProjectsUI.console.append(" >>>>> Finish extracting links");
     }
 
     // Double click on 'Marked Lines:' label clears all marked lines
@@ -490,7 +567,7 @@ public class ActionsUI {
 
         public ConsoleCaretListener(JTextArea textArea) {
             this.textArea = textArea;
-            ProjectsUI.console = this.textArea;
+            //  ProjectsUI.console = this.textArea;
         }
 
         public void caretUpdate(CaretEvent e) {
@@ -517,8 +594,9 @@ public class ActionsUI {
 
         private JList consolesList;
         private ArrayList outputList;
-        private  JViewport viewport;
-        public ConsoleListener(JList consolesList, ArrayList outputList,JViewport viewport) {
+        private JViewport viewport;
+
+        public ConsoleListener(JList consolesList, ArrayList outputList, JViewport viewport) {
             super();
             this.consolesList = consolesList;
             this.outputList = outputList;
@@ -534,10 +612,10 @@ public class ActionsUI {
             ArrayList al = (ArrayList) outputList.get(i);
             JTextArea console = (JTextArea) al.get(1);
             console.setCaretPosition(console.getText().length());
-            updateStopAction(this.consolesList,outputList,viewport);
+            updateStopAction(this.consolesList, outputList, viewport);
 
             // Update buttons of font style if radioButton is selected.
-           /* if (radioButton.isSelected()) {
+            /* if (radioButton.isSelected()) {
 
                 Font font = console.getFont();
                 String fontName = font.getName();
@@ -560,7 +638,7 @@ public class ActionsUI {
         }  // valueChanged
     }
 
-    public void updateStopAction( JList consolesList,ArrayList outputList,JViewport viewport) {
+    public void updateStopAction(JList consolesList, ArrayList outputList, JViewport viewport) {
         int i = consolesList.getSelectedIndex();
         if (i != -1) {
             ArrayList list = (ArrayList) outputList.get(i);
@@ -573,24 +651,25 @@ public class ActionsUI {
             }
         }
     }
-    
-    
-     // Listener for JList consolesList. Each item of the consolesList is an
+
+    // Listener for JList consolesList. Each item of the consolesList is an
     // ArrayList such that:
     //	 item.get(0) == Boolean
     //	 item.get(1) == JTextArea
     //	 item.get(2) == Process/null
     //    item.get(3) == Run/Build thread
     public class ProjectListener implements ListSelectionListener {
+
         private JList projectList;
-        private Object selectedProjectItem;
-        public ProjectListener(JList projectList,Object selectedProjectItem)
-        {
+
+        //private Object selectedProjectItem;
+        public ProjectListener(JList projectList) {
             super();
-            this .projectList = projectList;
-            this.selectedProjectItem = selectedProjectItem;
-            
+            this.projectList = projectList;
+            // this.selectedProjectItem = selectedProjectItem;
+
         }
+
         @Override
         public void valueChanged(ListSelectionEvent e) {
             int i = projectList.getSelectedIndex();
@@ -598,22 +677,23 @@ public class ActionsUI {
             {
                 return;
             }
-            selectedProjectItem = projectList.getSelectedValue();
+            ProjectsUI.selectedProjectItem = projectList.getSelectedValue();
 
         }
 
     }
 
-    
-  public class ClearAction extends AbstractAction {
+    public class ClearAction extends AbstractAction {
+
         private JList consolesList;
         private ArrayList outputList;
-      public ClearAction(JList consolesList,ArrayList outputList)
-      {
-       super();
-       this.consolesList = consolesList;
-       this.outputList = outputList;
-      }
+
+        public ClearAction(JList consolesList, ArrayList outputList) {
+            super();
+            this.consolesList = consolesList;
+            this.outputList = outputList;
+        }
+
         public void actionPerformed(ActionEvent e) {
             int i = consolesList.getSelectedIndex();
             ArrayList al = (ArrayList) outputList.get(i);
@@ -626,17 +706,17 @@ public class ActionsUI {
 
     // Caret listener that updates status labels of each file
     //
-  
-  
-   class GoAction extends AbstractAction {
-     private JTextField goToLine;
+    class GoAction extends AbstractAction {
+
+        private JTextField goToLine;
+
         GoAction(JTextField goToLine) {
             setEnabled(false);
             this.goToLine = goToLine;
         }
 
         public void actionPerformed(ActionEvent e) {
-            MyInternalFrame frame = InnerFramesUI.getInstance(). getSelectedFrame();
+            MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
             if (frame == null) {
                 setEnabled(false);
                 return;
@@ -651,8 +731,8 @@ public class ActionsUI {
             try {
                 line = Integer.parseInt(goToLine.getText());
             } catch (NumberFormatException nfe) {
-               // invalidInput();
-            //    transferFocusToTextArea();
+                // invalidInput();
+                //    transferFocusToTextArea();
                 return;
             }
             int totalLines = jta.getLineCount();
@@ -671,18 +751,18 @@ public class ActionsUI {
             //transferFocusToTextArea();
         }
     }
-   
-   
-   
+
     class TabAction extends AbstractAction {
-  private JTextField tabField;
+
+        private JTextField tabField;
+
         TabAction(JTextField tabField) {
             setEnabled(false);
             this.tabField = tabField;
         }
 
         public void actionPerformed(ActionEvent e) {
-            MyInternalFrame frame = InnerFramesUI.getInstance(). getSelectedFrame();
+            MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
             if (frame == null) {
                 setEnabled(false);
                 return;
@@ -694,8 +774,8 @@ public class ActionsUI {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException nfe) {
-               // invalidInput();
-              //  transferFocusToTextArea();
+                // invalidInput();
+                //  transferFocusToTextArea();
                 return;
             }
             JTextArea jta = frame.getJTextArea();
@@ -704,26 +784,28 @@ public class ActionsUI {
             //transferFocusToTextArea();
         }
     }
-    
-    
+
     public class MyWindowListener extends WindowAdapter {
+
         private JDesktopPane desktop;
         private JFrame frm;
-        public MyWindowListener(JDesktopPane desktop,JFrame frm)
-        {
+
+        public MyWindowListener(JDesktopPane desktop, JFrame frm) {
             super();
             this.desktop = desktop;
             this.frm = frm;
         }
+
         public void windowClosing(WindowEvent e) {
-            closeEditor(desktop,frm);
+            closeEditor(desktop, frm);
         }
     }   // End MyWindowListener
 // Close all frames displayed in desktop. Showed a nice trick of using
     // PropertyVetoException to check each file before closing. Check 
     // CloseListener for how.
     //
-    public void closeEditor(JDesktopPane desktop,JFrame frm) {
+
+    public void closeEditor(JDesktopPane desktop, JFrame frm) {
 
         JInternalFrame jif[] = desktop.getAllFrames();
         for (int i = 0; i < jif.length; i++) {
@@ -740,12 +822,11 @@ public class ActionsUI {
 
     }   // End closeEditor
 
-    
-     private void exit(JFrame frm) {
+    private void exit(JFrame frm) {
         frm.setVisible(false);
         // Clean up unwanted resource
         frm.dispose();
-       // findDialog.dispose();
+        // findDialog.dispose();
         //commandDialog.dispose();
         //optionDialog.dispose();
 

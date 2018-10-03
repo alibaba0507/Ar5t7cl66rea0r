@@ -9,10 +9,12 @@ import articlecreator.gui.components.ui.ProjectItem;
 import articlecreator.gui.components.ui.FileChooserUI;
 import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.awt.FlowLayout;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.DefaultListModel;
@@ -31,35 +33,34 @@ import org.json.simple.parser.JSONParser;
 public class OpenPoject extends javax.swing.JPanel {
 
     //private Hashtable defaultProperties;
-   // private DefaultListModel projectListModel;
-   // private JList projectList;
+    // private DefaultListModel projectListModel;
+    // private JList projectList;
     private JFileChooser chooser;
     public static final String CURRENT_DIR = System.getProperty("user.dir");
     private ProjectItem selectedObj;
-   
+
     /**
      * Creates new form OpenPoject
      */
     public OpenPoject() {
         super();
-   //     this.propertiesUI = propertiesUI;
-       /* this.projectList = projectList;
+        //     this.propertiesUI = propertiesUI;
+        /* this.projectList = projectList;
         this.projectListModel = projectListModel;
-        */
-       
-        
-       chooser = new FileChooserUI().createFileChooser(FileChooserUI.DIR_ONLY);
-        if (ProjectsUI.selectedProjectItem != null 
-                 && ProjectsUI.selectedProjectItem instanceof ProjectItem)
-            this.selectedObj = (ProjectItem)ProjectsUI.selectedProjectItem;
+         */
+
+        chooser = new FileChooserUI().createFileChooser(FileChooserUI.DIR_ONLY);
+        if (ProjectsUI.selectedProjectItem != null
+                && ProjectsUI.selectedProjectItem instanceof ProjectItem) {
+            this.selectedObj = (ProjectItem) ProjectsUI.selectedProjectItem;
+        }
         //this.defaultProperties = defaultProperties;
         setLayout(new FlowLayout());
         initComponents();
         parseSelectedObject();
 
     }
-     
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -82,6 +83,7 @@ public class OpenPoject extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         txtProjName = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        btnImport = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
@@ -121,11 +123,21 @@ public class OpenPoject extends javax.swing.JPanel {
 
         jLabel3.setText("One Per Line");
 
+        btnImport.setIcon(new javax.swing.ImageIcon("C:\\Users\\alibaba0507\\Downloads\\dev\\java projects\\dev\\ArticleCreator\\src\\images\\Import24.gif")); // NOI18N
+        btnImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnImportActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 500, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(255, 255, 255)
+                .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(354, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -162,7 +174,10 @@ public class OpenPoject extends javax.swing.JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 262, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(181, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -213,7 +228,7 @@ public class OpenPoject extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -238,27 +253,26 @@ public class OpenPoject extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1))
         );
     }// </editor-fold>//GEN-END:initComponents
-     
-    public void save()
-    {
-          String projName, keyWords, dir;
+
+    public void save() {
+        String projName, keyWords, dir;
         if (txtProjName.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter valid Project Name",
-                "Save Project", JOptionPane.ERROR_MESSAGE);
+                    "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (txtKeyWords.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter KeyWords",
-                "Save Project", JOptionPane.ERROR_MESSAGE);
+                    "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (txtProjectDirectory.getText().isEmpty()) {
             JOptionPane.showMessageDialog(btnProjectSave, "Please enter Project Directory",
-                "Save Project", JOptionPane.ERROR_MESSAGE);
+                    "Save Project", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -303,12 +317,12 @@ public class OpenPoject extends javax.swing.JPanel {
         savedProjJSON.put("prj", projectsJSON);
         PropertiesUI.getInstance().getDefaultProps().put("PROJECTS", savedProjJSON.toJSONString());
         PropertiesUI.getInstance().saveProperties();
-        
+
         reloadProjectTree();
     }
     private void btnProjectSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectSaveActionPerformed
-       save();
-      
+        save();
+
     }//GEN-LAST:event_btnProjectSaveActionPerformed
 
     private void btnProjectFileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectFileChooserActionPerformed
@@ -331,50 +345,86 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         }  // End while
     }//GEN-LAST:event_btnProjectFileChooserActionPerformed
- 
-    private void parseSelectedObject()
-   {
-       if (selectedObj == null)
-           return;
-       JSONParser parser = new JSONParser();
-            try {
-                JSONObject p = (JSONObject) parser.parse(selectedObj.getJSONObject());
-                txtProjName.setText((String) p.get("name"));
-                txtKeyWords.setText((String)p.get("keyWords"));
-                txtProjectDirectory.setText((String) p.get("dir" ));
-                DefaultTableModel tableModel = (DefaultTableModel) jTable1.getModel();
-                for (int i = 0;i < tableModel.getRowCount();i++)
-                {
-                    tableModel.removeRow(0);
-                }
-                jTable1.getColumnModel().getColumn(0).setPreferredWidth(20);
-                jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
-                jTable1.getColumnModel().getColumn(2).setPreferredWidth(350);
-                jTable1.getColumnModel().getColumn(3).setPreferredWidth(10);
-                Hashtable prop =   PropertiesUI.getInstance().initProjectProperties((String) p.get("dir" )) ;//editor.initProjectProperties((String) p.get("dir" ));
-                Iterator it = prop.keySet().iterator();
-                while (it.hasNext())
-                {
-                    String keyWord = (String)it.next();
-                    String jsonString = (String)prop.get(keyWord);
-                    JSONParser tableParser = new JSONParser();
-                    JSONArray arr = (JSONArray)  tableParser.parse(jsonString);
-                    Iterator jsonIt=  arr.iterator();
-                    while(jsonIt.hasNext())
-                    {
-                        JSONObject ob = (JSONObject)jsonIt.next();
-                        String wordCnt = (String)ob.get("wordCnt");
-                        if (wordCnt == null) wordCnt = "";
-                        String[] values = {keyWord,(String)ob.get("title"),(String)ob.get("URL"),wordCnt};
-                        tableModel.addRow(values);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+    private void btnImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportActionPerformed
+        while (true) { // To keep chooser open if open a directory, then press open button
+
+            chooser = new FileChooserUI().createFileChooser(FileChooserUI.FILE_ONLY);
+              chooser.setAcceptAllFileFilterUsed(true);
+            //chooser.rescanCurrentDirectory();
+            int returnVal = chooser.showOpenDialog(OpenPoject.this);
+            File file = chooser.getSelectedFile();
+
+            if (returnVal == JFileChooser.CANCEL_OPTION || returnVal == -1) {
+                break;
             }
-   }
+            // Necessary checking for 3 conditions to avoid exceptions
+            if (returnVal == JFileChooser.APPROVE_OPTION && file != null && file.isFile()) {
+                //txtProjectDirectory.setText(file.getAbsolutePath());
+                break;
+            }
+        }
+    }//GEN-LAST:event_btnImportActionPerformed
+
+    public void refreshLinksTable() {
+        try {
+            DefaultTableModel tableModel = (DefaultTableModel) jTable1.getModel();
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                tableModel.removeRow(0);
+            }
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(20);
+            jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
+            jTable1.getColumnModel().getColumn(2).setPreferredWidth(350);
+            jTable1.getColumnModel().getColumn(3).setPreferredWidth(10);
+            String dir = txtProjectDirectory.getText();
+            if (dir == null || dir.equals("")) {
+                return;
+            }
+            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(dir);//editor.initProjectProperties((String) p.get("dir" ));
+            Iterator it = prop.keySet().iterator();
+            while (it.hasNext()) {
+                String keyWord = (String) it.next();
+                //String jsonString = (String)prop.get(keyWord);
+                //   Hashtable links = (Hashtable)prop.get(keyWord);
+                ArrayList links = (ArrayList) prop.get(keyWord);
+// JSONParser tableParser = new JSONParser();
+                // JSONArray arr = (JSONArray)  tableParser.parse(jsonString);
+                //Iterator jsonIt=  arr.iterator();
+                // Iterator jsonIt = links.keySet().iterator();
+                Iterator jsonIt = links.iterator();
+                while (jsonIt.hasNext()) {
+                    LinksObject obj = (LinksObject) jsonIt.next();
+                    //  JSONObject ob = (JSONObject)jsonIt.next();
+                    //  String wordCnt = (String)ob.get("wordCnt");
+                    //  if (wordCnt == null) wordCnt = "";
+                    String[] values = {obj.getKeyWord(),
+                         obj.getTitle(), obj.getLink(), obj.getWordCount()};
+                    tableModel.addRow(values);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void parseSelectedObject() {
+        if (selectedObj == null) {
+            return;
+        }
+        JSONParser parser = new JSONParser();
+        try {
+            JSONObject p = (JSONObject) parser.parse(selectedObj.getJSONObject());
+            txtProjName.setText((String) p.get("name"));
+            txtKeyWords.setText((String) p.get("keyWords"));
+            txtProjectDirectory.setText((String) p.get("dir"));
+            refreshLinksTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void reloadProjectTree() {
-        if ( ProjectsUI.projectListModel == null) {
+        if (ProjectsUI.projectListModel == null) {
             return;
         }
 
@@ -395,7 +445,7 @@ public class OpenPoject extends javax.swing.JPanel {
                     selectedIndex = cnt;
                 }
                 cnt++;
-               ProjectsUI.projectListModel.addElement(new ProjectItem() {
+                ProjectsUI.projectListModel.addElement(new ProjectItem() {
                     @Override
                     public String toString() {
                         return (String) p.get("name");
@@ -407,16 +457,17 @@ public class OpenPoject extends javax.swing.JPanel {
                     }
                 });
             }// end while
-           ProjectsUI. projectList.setSelectedIndex(cnt);
+            ProjectsUI.projectList.setSelectedIndex(cnt);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancelProject;
+    private javax.swing.JButton btnImport;
     private javax.swing.JButton btnProjectFileChooser;
     private javax.swing.JButton btnProjectSave;
     private javax.swing.JLabel jLabel1;
@@ -434,7 +485,5 @@ public class OpenPoject extends javax.swing.JPanel {
     private javax.swing.JTextField txtProjName;
     private javax.swing.JTextField txtProjectDirectory;
     // End of variables declaration//GEN-END:variables
-
-    
 
 }

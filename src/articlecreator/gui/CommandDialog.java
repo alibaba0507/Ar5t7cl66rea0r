@@ -30,11 +30,13 @@ import javax.swing.event.*;
 import javax.swing.border.*;
 import java.io.File;
 import articlecreator.gui.dl.*;
+import articlecreator.gui.run.ArticleManagmentMain;
 	
 class CommandDialog extends JDialog {
 
-  private MyEditor editor;
-  private JTextField commandField;
+  //private MyEditor editor;
+  private ArticleManagmentMain editor;
+    private JTextField commandField;
   private JTextField directoryField;
   private JButton okButton;
   private JButton cancelButton;
@@ -44,7 +46,7 @@ class CommandDialog extends JDialog {
   private Action cut, copy, paste, selectAll;
   private DeleteAction delete;
 
-  public CommandDialog( MyEditor editor )
+  public CommandDialog( ArticleManagmentMain editor )
   {
 	     super( editor, "Command Dialog", true); // true -> modal dialog
         this.editor = editor;
@@ -99,8 +101,8 @@ class CommandDialog extends JDialog {
   ActionListener okAction = new ActionListener() { 
       public void actionPerformed(ActionEvent e) {
       	
-      	ArrayList list = editor.outputArrayList();
-		   int index = editor.getConsolesList().getSelectedIndex(); 
+    //  	ArrayList list = editor.outputArrayList();
+	//	   int index = editor.getConsolesList().getSelectedIndex(); 
 		   String command = commandField.getText();
 		   String dirPath = directoryField.getText();
 		   
@@ -111,9 +113,9 @@ class CommandDialog extends JDialog {
       		return;
 		   }
 		   
-        	Run run = new Run( command, dirPath, fileName, list, 4, index, editor );
-	      run.start();
-	      editor.getStopAction().setEnabled( true );
+        //	Run run = new Run( command, dirPath, fileName, list, 4, index, editor );
+	     // run.start();
+	     // editor.getStopAction().setEnabled( true );
 	     	
          setVisible(false);
          
@@ -123,6 +125,7 @@ class CommandDialog extends JDialog {
   ActionListener browseAction = new ActionListener() { 
       public void actionPerformed(ActionEvent e) {
 
+        /*
          JFileChooser chooser = editor.getChooser();
          while ( true ) {  // To keep chooser open if open a directory, then press open button.
 	         chooser.rescanCurrentDirectory();
@@ -140,7 +143,7 @@ class CommandDialog extends JDialog {
 					return;
 	         }  
 	      }  // End while
-	         
+	 */        
       }
   };  
   
@@ -160,12 +163,13 @@ class CommandDialog extends JDialog {
 
 	  popup = new JPopupMenu();
 
-	  cut = editor.getAction(DefaultEditorKit.cutAction);
-	  copy = editor.getAction(DefaultEditorKit.copyAction);
+	 /*
+         cut = editor.getAction(DefaultEditorKit.cutAction);
+ 	  copy = editor.getAction(DefaultEditorKit.copyAction);
 	  paste = editor.getAction(DefaultEditorKit.pasteAction);
 	  delete = new DeleteAction();
 	  selectAll = editor.getAction(DefaultEditorKit.selectAllAction);
-	  
+	 */ 
 	  JMenuItem menuItem = new JMenuItem();
      menuItem.setAction( cut );
      menuItem.setText("Cut");

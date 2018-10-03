@@ -4,6 +4,7 @@
 package za.co.utils;
 
 
+import articlecreator.gui.run.ArticleManagmentMain;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 
 
 /**
@@ -189,10 +191,11 @@ public class AWTUtils
     {
          URL url = null;
         if (component == null)
-            url = AWTUtils.class.getResource(path);
+            url = ArticleManagmentMain.class.getResource(path);
         else
           url = component.getClass().getResource(path);
-        return getIcon(component, url);
+        Image img = new ImageIcon(url).getImage();
+        return  img;//getIcon(component, url);
     }
 
 
@@ -208,8 +211,8 @@ public class AWTUtils
     {
         if(debug()) log.fine("loading icon url=" + url + "...");
 
-        Image icon = component.getToolkit().getImage(url);
-
+        Image icon = ArticleManagmentMain.getInstance().getToolkit().getImage(url);
+        
         MediaTracker mediatracker = new MediaTracker(component);
         mediatracker.addImage(icon, 1);
         try

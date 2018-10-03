@@ -1,5 +1,6 @@
 package articlecreator.gui;
 
+import articlecreator.gui.run.ArticleManagmentMain;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.io.*;
@@ -16,8 +17,9 @@ class Run extends Thread {
 		 private JViewport vp;
 		 private JScrollBar scrollBar;
 		 private int option, index;
-		 private MyEditor editor;
-		 private JTextArea console;
+		// private MyEditor editor;
+		  private ArticleManagmentMain editor;
+                 private JTextArea console;
 		 private Boolean Locks[];
 		 private MyBasicTextAreaUI myUID;
 		 private boolean compilingSuccess = false;
@@ -36,7 +38,8 @@ class Run extends Thread {
 
 		 private final String fileName; 
 
-		 Run( String command, String currentDir, String fileName, ArrayList list, int option, int index, MyEditor editor ) {
+		 Run( String command, String currentDir, String fileName, ArrayList list
+                                  , int option, int index, ArticleManagmentMain editor ) {
 		 	 this.command = command;
 		 	 this.currentDir = currentDir;
 		 	 this.fileName = fileName;
@@ -48,7 +51,8 @@ class Run extends Thread {
 		 
     	 public void run() {
     	 
-    	 	 this.vp = editor.getViewport();
+    	 	/*
+                 this.vp = editor.getViewport();
     	 	 this.console = (JTextArea) list.get(1); 
     	 	 this.myUID = (MyBasicTextAreaUI)console.getUI();
     	 	 this.Locks = new Boolean[2];
@@ -141,7 +145,7 @@ class Run extends Thread {
 			 list.set( 2, null );
 			 editor.updateCommandPanel( list, index ); // Call back method in MyEditor
 			 Toolkit.getDefaultToolkit().beep();
-			 
+			 */
 		}  // End run()
 
       public void terminate() {

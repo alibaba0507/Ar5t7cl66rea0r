@@ -1,5 +1,6 @@
 package articlecreator.gui;
 
+import articlecreator.gui.components.OpenPoject;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.undo.*;
@@ -21,7 +22,7 @@ public class MyInternalFrame extends JInternalFrame {
 	private File file;
 	private long lastModified;
 	private KeyListener tabKeyListener = null; 
-	
+	private OpenPoject project;
 	public MyInternalFrame( String title, boolean a, boolean b, boolean c, boolean d) {
 		super( title, a, b, c, d );
 		lineArea = new JTextArea();
@@ -29,6 +30,14 @@ public class MyInternalFrame extends JInternalFrame {
 		lineArea.setBackground(Color.lightGray);
 	}
 	
+        public OpenPoject getProjectWindows()
+        {
+            return project;
+        }
+        public void setProjectWindows(OpenPoject p)
+        {
+            this.project = p;
+        }
 	public void setUndoManager( UndoManager undo ) {
 		this.undo = undo;
 	}

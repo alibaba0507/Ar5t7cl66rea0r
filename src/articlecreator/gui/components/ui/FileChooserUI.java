@@ -6,7 +6,7 @@
 package articlecreator.gui.components.ui;
 
 
-import static articlecreator.gui.MyEditor.CURRENT_DIR;
+import static articlecreator.gui.run.ArticleManagmentMain.CURRENT_DIR;
 
 import java.io.File;
 import java.net.URL;
@@ -49,6 +49,7 @@ public class FileChooserUI {
             fileChooser.addChoosableFileFilter(new TextFilter());
             fileChooser.addChoosableFileFilter(new JavaCodeFilter());
             fileChooser.addChoosableFileFilter(new HtmlFilter());
+            fileChooser.addChoosableFileFilter(new CSVFilter());
             return fileChooser;
         }
 
@@ -79,7 +80,7 @@ class HtmlFilter extends SuffixAwareFilter {
     }
 
     public String getDescription() {
-        return "Text Files(*.txt)";
+        return "HTML Files(*.html)";
     }
 }
 
@@ -102,6 +103,25 @@ class JavaCodeFilter extends SuffixAwareFilter {
     }
 }
 
+class CSVFilter extends SuffixAwareFilter {
+
+    public boolean accept(File f) {
+        boolean accept = super.accept(f);
+        if (!accept) {
+            String suffix = getSuffix(f);
+            if (suffix != null) {
+                accept = super.accept(f) || suffix.equals("csv");
+            }
+        }
+        return accept;
+    }
+
+    public String getDescription() {
+        return "CSV Files(*.csv)";
+    }
+}
+
+
     class CustomFileView extends FileView {
         
         URL u = FileChooserUI.class.getResource("/images/FILE.gif");
@@ -114,6 +134,9 @@ class JavaCodeFilter extends SuffixAwareFilter {
         private Icon htmlIcon = new ImageIcon(uHTML);
         
           URL uTXT = FileChooserUI.class.getResource("/images/txt.png");
+          
+          URL uCSV = FileChooserUI.class.getResource("/images/txt.png");
+          
         private Icon txtIcon = new ImageIcon(uTXT);
         public Icon getIcon(File f) {
             Icon icon;
@@ -128,7 +151,7 @@ class JavaCodeFilter extends SuffixAwareFilter {
             else if (suffix.equals("html")) {
                 icon = htmlIcon;
             }
-            else if (suffix.equals("txt")) {
+            else if (suffix.equals("txt") || suffix.equals("csv")) {
                 icon = txtIcon;
             }
             else {

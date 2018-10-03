@@ -16,6 +16,9 @@ package articlecreator.gui;
  *  or form) code contained in this file. 
  */
 
+import articlecreator.gui.components.ui.InnerFramesUI;
+import articlecreator.gui.components.ui.PropertiesUI;
+import articlecreator.gui.run.ArticleManagmentMain;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -48,16 +51,17 @@ class FontColorPanel extends JPanel {
 							  defaultColorRadio, customColorRadio; 
   
   private static StyledDocument document;
-  private MyEditor myEditor;
+  //private MyEditor myEditor;
+   private ArticleManagmentMain myEditor;
   private ColorOptionPanel colorPanel;
   private Hashtable defaultProps;
   private static SimpleAttributeSet attributes;
 
-  public FontColorPanel( final MyEditor myEditor )
+  public FontColorPanel( final ArticleManagmentMain myEditor )
   {
 	    
 	    this.myEditor = myEditor;
-	    this.defaultProps = myEditor.getDefaultProps();
+	    this.defaultProps = PropertiesUI.getInstance().getDefaultProps();// myEditor.getDefaultProps();
     	 String[] names;
   		 String[] sizes = new String[65];
 
@@ -196,8 +200,8 @@ class FontColorPanel extends JPanel {
 		 
 		 currentConsoleRadio.addActionListener( new ActionListener() {
 		 	 public void actionPerformed( ActionEvent e ) {
-			 	 JTextArea jta = myEditor.getSelectedConsole();
-			 	 update( jta, false, "CONSOLE" );
+			 	// JTextArea jta = myEditor.getSelectedConsole();
+			 	// update( jta, false, "CONSOLE" );
 	  		 }
 		 });
 		 
@@ -210,7 +214,7 @@ class FontColorPanel extends JPanel {
 		 
 		 currentDocRadio.addActionListener( new ActionListener() {
 		 	 public void actionPerformed( ActionEvent e ) {
-		 	 	 MyInternalFrame frame = myEditor.getSelectedFrame();
+		 	 	 MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();// myEditor.getSelectedFrame();
 		 	 	 if ( frame == null )
 		 	 	 	return;
 			 	 JTextArea jta = frame.getJTextArea();
@@ -324,14 +328,14 @@ class FontColorPanel extends JPanel {
                ((MyBasicTextPaneUI)m_preview.getUI()).getColor() );
    	  }
    	  else if ( currentConsoleRadio.isSelected() ) {
-   	  		JTextArea console = myEditor.getSelectedConsole();
-   	  		customizeTextArea( console );
-            myEditor.updateFontPanel( console, "CONSOLE" );
+   	  		//JTextArea console = myEditor.getSelectedConsole();
+   	  	//	customizeTextArea( console );
+            //myEditor.updateFontPanel( console, "CONSOLE" );
    	  }
  		  else if ( currentDocRadio.isSelected() && currentDocRadio.isEnabled() ) {
  		  		JTextArea doc = ((MyInternalFrame)myEditor.getSelectedFrame()).getJTextArea();
  		  		customizeTextArea( doc );
-            myEditor.updateFontPanel( doc, "EDITOR" );
+            //myEditor.updateFontPanel( doc, "EDITOR" );
    	  }
 	   }
    }

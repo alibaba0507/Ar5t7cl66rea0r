@@ -1,5 +1,7 @@
 package articlecreator.gui;
 
+import articlecreator.gui.components.ui.InnerFramesUI;
+import articlecreator.gui.run.ArticleManagmentMain;
 import java.awt.event.*;
 import javax.swing.plaf.basic.*;
 import javax.swing.*;
@@ -14,10 +16,11 @@ class ConsoleMouseListener extends MouseAdapter {
 	JTextArea console;
 	MyBasicTextAreaUI myUID;
 	String fileName;
-	MyEditor editor;
-	Document doc;
+	//MyEditor editor;
+        ArticleManagmentMain editor;
+        Document doc;
 	
-	public ConsoleMouseListener( JTextArea textArea, BasicTextAreaUI myUID, MyEditor editor ) {
+	public ConsoleMouseListener( JTextArea textArea, BasicTextAreaUI myUID, ArticleManagmentMain editor ) {
 		this.console = textArea;
 		this.myUID = (MyBasicTextAreaUI) myUID;
 		this.editor = editor;
@@ -36,7 +39,7 @@ class ConsoleMouseListener extends MouseAdapter {
   
  	   	if ( click == 1 ) {
  	   	
- 	   		MyInternalFrame frame = editor.getSelectedFrame();
+ 	   		MyInternalFrame frame =  InnerFramesUI.getInstance().getSelectedFrame();//editor.getSelectedFrame();
 			  	if ( !myUID.contains( line, false ) )
 				   return;
 				

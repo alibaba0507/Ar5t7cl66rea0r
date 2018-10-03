@@ -24,7 +24,7 @@ public class Main {
         //URL url = Main.class.getResource("/images/maxresdefault.jpg");
        final SplashScreen splash = new SplashScreen("/images/article_spinning_service.jpg");
         splash.setVisible(true);
-       final ArticleManagmentMain frame = new ArticleManagmentMain();
+       final ArticleManagmentMain frame =  new ArticleManagmentMain();
         Timer t = new Timer();
         t.schedule(new TimerTask() {
             @Override
@@ -35,7 +35,7 @@ public class Main {
                    frame.setVisible(true);
                // }
             }
-        }, 3000);
+        }, 1000);
         
         
         //splash.close();

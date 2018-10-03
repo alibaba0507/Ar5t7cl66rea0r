@@ -5,15 +5,13 @@
  */
 package articlecreator.gui.run;
 
-import articlecreator.gui.ArticleExtractor;
 import articlecreator.gui.MyBasicTextAreaUI;
-import articlecreator.gui.MyEditor;
-import articlecreator.gui.MyInternalFrame;
 import articlecreator.gui.components.Settings;
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.InnerFramesUI;
 import articlecreator.gui.components.ui.ProjectItem;
 import articlecreator.gui.components.ui.ProjectsUI;
+
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.components.ui.StatusPanelUI;
 import java.awt.BorderLayout;
@@ -63,6 +61,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.metal.MetalTabbedPaneUI;
 import org.json.simple.JSONArray;
@@ -98,15 +98,17 @@ public class ArticleManagmentMain extends JFrame {
     private final JSplitPane vSplit;
     private final JComboBox cbFiles;
     private final boolean hasStartProcess;
-
+    private static ArticleManagmentMain instance;
+    private  JTextArea console;
     public ArticleManagmentMain() {
         super("ArticleManagentSystem");
-
+        if (ArticleManagmentMain.instance == null)
+             ArticleManagmentMain.instance = this;
         desktop = new JDesktopPane();
         toolBar = new JToolBar();
         menuBar = new JMenuBar();
         // create instance this will be singleton instance
-        new InnerFramesUI(desktop);
+        InnerFramesUI innerFramesUI = new InnerFramesUI(desktop);
         // Create menu bars
         setJMenuBar(createMenuBar());
         createPopup();
@@ -121,6 +123,8 @@ public class ArticleManagmentMain extends JFrame {
         projectList = new JList();
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectListModel = new DefaultListModel();
+        ProjectsUI.projectList = projectList;
+        ProjectsUI.projectListModel = projectListModel;
         projectList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -154,6 +158,7 @@ public class ArticleManagmentMain extends JFrame {
         try {
             consolesList.setModel(consolesListModel);
             projectList.setModel(projectListModel);
+         
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
@@ -211,7 +216,8 @@ public class ArticleManagmentMain extends JFrame {
         hSplit.setMinimumSize(dim);
 
         // Initialize default console window for displaying program output
-        JTextArea console = new JTextArea();
+         console = new JTextArea();
+         ProjectsUI.console = console;
         String setting = (String) PropertiesUI.getInstance().getDefaultProps().get("SETTING");
         if (setting.equals("CUSTOM")) {
             customizeTextArea(console, "CUSTOM_CONSOLE");
@@ -246,7 +252,7 @@ public class ArticleManagmentMain extends JFrame {
         consolesList.setSelectedIndex(0);
         consolesList.addListSelectionListener(new ActionsUI().new ConsoleListener(consolesList, outputList, viewport));
         projectList.setSelectedIndex(0);
-        projectList.addListSelectionListener(new ActionsUI().new ProjectListener(projectList, selectedProjectItem));
+        projectList.addListSelectionListener(new ActionsUI().new ProjectListener(projectList));
         // GUI layout
 
         JPanel consolePanel = new JPanel(new BorderLayout());
@@ -326,7 +332,13 @@ public class ArticleManagmentMain extends JFrame {
         }
 
     }
-
+    
+    public static ArticleManagmentMain getInstance()
+    {
+         if (ArticleManagmentMain.instance == null)
+             ArticleManagmentMain.instance = new ArticleManagmentMain();
+         return ArticleManagmentMain.instance;
+    }
     public Color getLineColor(String setting, String type) {
         // Setting is not returned here becaue this method is going to
         // be reused by FontColorPanel.java
@@ -493,7 +505,7 @@ public class ArticleManagmentMain extends JFrame {
         // Menu item for preferences
         // This is preference box where we can put all
         // our goodies
-        final Settings settings = new Settings();
+        final Settings settings = new Settings(this,true);
         menuItem = optionMenu.add(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {

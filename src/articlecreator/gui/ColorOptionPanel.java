@@ -1,5 +1,7 @@
 package articlecreator.gui;
 
+import articlecreator.gui.components.ui.PropertiesUI;
+import articlecreator.gui.run.ArticleManagmentMain;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.util.*;
@@ -19,7 +21,8 @@ public class ColorOptionPanel extends JPanel {
 	 // private members
 	 private ColorTableModel colorModel; 
 	 private JTable colorTable;
-	 private MyEditor editor;
+	 //private MyEditor editor;
+         private ArticleManagmentMain editor;
 	 private Hashtable defaultProps;
 	 private TableColumn colorColumn;
 	 private JColorChooser colorChooser;
@@ -27,9 +30,9 @@ public class ColorOptionPanel extends JPanel {
 	 private int row;
 	 private boolean tableLock;
 
-    public ColorOptionPanel( MyEditor editor ) {
+    public ColorOptionPanel( ArticleManagmentMain editor ) {
     	 this.editor = editor;
-    	 this.defaultProps = editor.getDefaultProps();
+    	 this.defaultProps = PropertiesUI.getInstance().getDefaultProps();// editor.getDefaultProps();
        _init();
        initColors();
     }
@@ -151,13 +154,14 @@ class ColorTableModel extends AbstractTableModel
 		static private LineBorder FocusBorder = new LineBorder( Color.magenta, 2 );
 
 		private Vector colorChoices;
-		private MyEditor editor;
+		//private MyEditor editor;
+                private ArticleManagmentMain editor;
 		private Hashtable defaultProps;
 
-		ColorTableModel( MyEditor editor )
+		ColorTableModel( ArticleManagmentMain editor )
 		{
 			this.editor = editor;
-			defaultProps = editor.getDefaultProps();
+			defaultProps = PropertiesUI.getInstance().getDefaultProps();// editor.getDefaultProps();
 			colorChoices = new Vector();
 		}
 	

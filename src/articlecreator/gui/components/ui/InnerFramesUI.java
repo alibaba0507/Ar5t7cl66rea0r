@@ -7,6 +7,7 @@ package articlecreator.gui.components.ui;
 
 import articlecreator.gui.MyInternalFrame;
 import articlecreator.gui.components.OpenPoject;
+import java.awt.Component;
 import java.io.File;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
@@ -34,6 +35,19 @@ public class InnerFramesUI {
         return interFamesInstance;
     }
 
+    public void refreshLinkByFrameName(String title) {
+        JInternalFrame[] frames = desktop.getAllFrames();
+        for (int i = 0; i < frames.length; i++) {
+            if (title != null && frames[i].getTitle().equals(title)) {
+                MyInternalFrame frm = (MyInternalFrame) frames[i];
+                if (frm.getProjectWindows() != null) {
+                    frm.getProjectWindows().refreshLinksTable();
+                }
+
+            }
+        }
+    }
+
     public JInternalFrame ceateProjectFrame(File file, String title) {
 
         if (title == null && ProjectsUI.selectedProjectItem == null) {
@@ -41,8 +55,8 @@ public class InnerFramesUI {
         } else if (ProjectsUI.selectedProjectItem != null && title == null) {
             title = ProjectsUI.selectedProjectItem.toString();
         }
-        //     else if (title != null)
 
+        //     else if (title != null)
         JInternalFrame[] frames = desktop.getAllFrames();
         for (int i = 0; i < frames.length; i++) {
             if (title != null && frames[i].getTitle().equals(title)) {
@@ -52,7 +66,7 @@ public class InnerFramesUI {
 
         MyInternalFrame jif = new MyInternalFrame(title, true, true, true, true);
         OpenPoject proj = new OpenPoject();
-
+        jif.setProjectWindows(proj);
         JScrollPane scroller = new JScrollPane(proj, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 

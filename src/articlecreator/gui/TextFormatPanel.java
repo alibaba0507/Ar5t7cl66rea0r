@@ -18,6 +18,8 @@ package articlecreator.gui;
 
 // Author: Samuel Huang, 12/1/2002
 
+import articlecreator.gui.components.ui.InnerFramesUI;
+import articlecreator.gui.components.ui.PropertiesUI;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;     
@@ -26,6 +28,7 @@ import javax.swing.text.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 import articlecreator.gui.dl.*;
+import articlecreator.gui.run.ArticleManagmentMain;
 
 class TextFormatPanel extends JPanel {
 
@@ -33,15 +36,16 @@ class TextFormatPanel extends JPanel {
   private JTextField tabField, wrapColumnField;
   private JRadioButton softTabRadio, hardTabRadio,
 							  currentRadio, defaultRadio;
-  private MyEditor myEditor;
+ // private MyEditor myEditor;
+   private ArticleManagmentMain myEditor;
   private Hashtable defaultProps;
   private EmptyBorder emptyBorder;
   private JLabel tabLabel, tabSizeLabel;
 				
-  public TextFormatPanel( MyEditor myEditor )
+  public TextFormatPanel( ArticleManagmentMain myEditor )
   {
 	    this.myEditor = myEditor;
-	    this.defaultProps = myEditor.getDefaultProps();
+	    this.defaultProps = PropertiesUI.getInstance().getDefaultProps();// myEditor.getDefaultProps();
        setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
 
        softTabRadio = new JRadioButton();
@@ -166,7 +170,7 @@ class TextFormatPanel extends JPanel {
   	  }
   	  else {
   	  	   
-  	  	   MyInternalFrame jif = myEditor.getSelectedFrame();
+  	  	   MyInternalFrame jif = InnerFramesUI.getInstance().getSelectedFrame();// myEditor.getSelectedFrame();
   			if ( jif != null ) {
   				JTextArea textArea = jif.getJTextArea();
   				textArea.setTabSize( tabSize );
@@ -182,7 +186,7 @@ class TextFormatPanel extends JPanel {
   			defaultProps.put("TAB","SOFT");
   	  }
   	  else {
-  		   MyInternalFrame jif = myEditor.getSelectedFrame();
+  		   MyInternalFrame jif = InnerFramesUI.getInstance().getSelectedFrame();// myEditor.getSelectedFrame();
   			if ( jif != null ) {
   				MyTabKey tabListener = new MyTabKey();
   				jif.setTabKeyListener( tabListener );
@@ -198,7 +202,7 @@ class TextFormatPanel extends JPanel {
   			defaultProps.put("TAB","HARD");
   	  }
   	  else {
-  			MyInternalFrame jif = myEditor.getSelectedFrame();
+  			MyInternalFrame jif = InnerFramesUI.getInstance().getSelectedFrame();// myEditor.getSelectedFrame();
   			if ( jif != null ) {
   				MyTabKey tabListener = (MyTabKey)jif.getTabKeyListener();
   				JTextArea textArea = jif.getJTextArea();

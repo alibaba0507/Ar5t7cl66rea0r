@@ -24,7 +24,9 @@ package articlecreator.gui;
 // Last Modified: 29/01/2002, 10:55 PM
 // Author: Samuel Huang, 23/04/2001
 
+import articlecreator.gui.components.ui.InnerFramesUI;
 import articlecreator.gui.dl.*;
+import articlecreator.gui.run.ArticleManagmentMain;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -36,7 +38,8 @@ import javax.swing.plaf.basic.*;
 class FindDialog extends JDialog
 {
   protected JComboBox findCombo, replaceCombo;
-  protected final MyEditor editor;
+  //protected final MyEditor editor;
+  protected final ArticleManagmentMain editor;
   protected int m_searchIndex = -1;
   protected boolean m_searchUp = false;
   protected String  m_searchData = null;
@@ -49,7 +52,7 @@ class FindDialog extends JDialog
   protected Border lineBorder, emptyBorder;
   protected JTextField findTextField, replaceTextField;
 
-  public FindDialog( MyEditor editor) {
+  public FindDialog( ArticleManagmentMain editor) {
   
      super(editor, "Find and Replace", false);
      this.editor = editor;
@@ -222,7 +225,7 @@ class FindDialog extends JDialog
     }
     key = str;
 
-    MyInternalFrame frame = editor.getSelectedFrame();
+    MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();// editor.getSelectedFrame();
     JTextArea textArea = frame.getJTextArea();
     int pos = textArea.getCaretPosition();
     
@@ -325,13 +328,13 @@ class FindDialog extends JDialog
   private void createPopup() {
 
 	  popup = new JPopupMenu();
-
+/*
 	  cut = editor.getAction(DefaultEditorKit.cutAction);
 	  copy = editor.getAction(DefaultEditorKit.copyAction);
 	  paste = editor.getAction(DefaultEditorKit.pasteAction);
 	  delete = new DeleteAction();
 	  selectAll = editor.getAction(DefaultEditorKit.selectAllAction);
-
+*/
 	  JMenuItem menuItem = new JMenuItem();
      menuItem.setAction( cut );
      menuItem.setText("Cut");

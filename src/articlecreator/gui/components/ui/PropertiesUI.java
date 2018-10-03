@@ -5,7 +5,6 @@
  */
 package articlecreator.gui.components.ui;
 
-import articlecreator.gui.MyEditor;
 import articlecreator.gui.run.ArticleManagmentMain;
 import java.awt.Color;
 import java.awt.Font;
@@ -23,6 +22,14 @@ import java.util.Hashtable;
 public class PropertiesUI {
      private static PropertiesUI instance;
     private Hashtable defaultProps = null;
+    public PropertiesUI()
+    {
+        super();
+        //getInstance();
+        loadProperties();
+        if (instance == null)
+            instance = this;
+    }
      public void initProperties() {
 
          File file = new File("defaultProperties");
@@ -70,7 +77,10 @@ public class PropertiesUI {
      public static PropertiesUI getInstance()
      {
          if (instance == null)
+         {    
              instance = new PropertiesUI();
+            // instance.loadProperties();
+         }
          return instance;
      }
      
@@ -83,7 +93,7 @@ public class PropertiesUI {
 
         } else {
             try {
-                FileInputStream fis = new FileInputStream(dir + MyEditor.FILE_SEPARATOR + "defaultProperties");
+                FileInputStream fis = new FileInputStream(dir + ArticleManagmentMain.FILE_SEPARATOR + "defaultProperties");
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 defaultPropsForProjectLinks = (Hashtable) ois.readObject();
                 ois.close();

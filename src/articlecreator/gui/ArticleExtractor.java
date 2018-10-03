@@ -6,7 +6,7 @@
 package articlecreator.gui;
 
 import articlecreator.ParseHTMLArticles;
-import static articlecreator.gui.MyEditor.FILE_SEPARATOR;
+import articlecreator.gui.run.ArticleManagmentMain;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -72,14 +72,14 @@ public class ArticleExtractor extends TimerTask {
 
     public Hashtable initProjectProperties(String dir) {
         Hashtable defaultPropsForProjectLinks = new Hashtable();
-        File file = new File(dir + FILE_SEPARATOR + "defaultProperties");
+        File file = new File(dir + ArticleManagmentMain. FILE_SEPARATOR + "defaultProperties");
         if (!file.exists()) {
 
             saveProjectPoerties(defaultPropsForProjectLinks, dir);
 
         } else {
             try {
-                FileInputStream fis = new FileInputStream(dir + FILE_SEPARATOR + "defaultProperties");
+                FileInputStream fis = new FileInputStream(dir + ArticleManagmentMain.FILE_SEPARATOR + "defaultProperties");
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 defaultPropsForProjectLinks = (Hashtable) ois.readObject();
                 ois.close();
@@ -93,7 +93,7 @@ public class ArticleExtractor extends TimerTask {
 
     public void saveProjectPoerties(Hashtable prop, String dir) {
         try {
-            FileOutputStream fos = new FileOutputStream(dir + FILE_SEPARATOR + "defaultProperties");
+            FileOutputStream fos = new FileOutputStream(dir + ArticleManagmentMain.FILE_SEPARATOR + "defaultProperties");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(prop);
             oos.flush();
