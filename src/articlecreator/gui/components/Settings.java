@@ -5,7 +5,13 @@
  */
 package articlecreator.gui.components;
 
+import articlecreator.gui.components.ui.PropertiesUI;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,6 +25,20 @@ public class Settings extends javax.swing.JDialog {
     public Settings(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        cboParseType.setSelectedIndex(1);
+        cboParseType.setSelectedIndex(0);
+        Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+         ArrayList list = (ArrayList) prop.get("USER_SEARCH");
+         if (list != null)
+         {
+             // prop.put("USER_SEARCH",new ArrayList());
+            //  PropertiesUI.getInstance().saveProperties();
+             Iterator it = list.iterator();
+             while(it.hasNext())
+             {
+                 ((DefaultListModel) ((JList) lstSavedSearchEngines).getModel()).addElement(it.next());
+             }
+         }
     }
 
     /**
@@ -34,13 +54,12 @@ public class Settings extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txtSearchURL = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        txtParams = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstSavedSearchEngines = new javax.swing.JList();
         btnAddToSearch = new javax.swing.JButton();
         btnDelSearch = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        txtSearchSyntax = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -56,14 +75,22 @@ public class Settings extends javax.swing.JDialog {
 
         jLabel1.setText("Search URL");
 
-        jLabel2.setText("Params   ");
-
-        jLabel3.setText("If any ...");
-
+        lstSavedSearchEngines.setModel(new DefaultListModel<String>()
+        );
         lstSavedSearchEngines.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstSavedSearchEngines.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                lstSavedSearchEnginesValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(lstSavedSearchEngines);
 
         btnAddToSearch.setText("Add ");
+        btnAddToSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToSearchActionPerformed(evt);
+            }
+        });
 
         btnDelSearch.setText("Delete");
         btnDelSearch.addActionListener(new java.awt.event.ActionListener() {
@@ -71,6 +98,8 @@ public class Settings extends javax.swing.JDialog {
                 btnDelSearchActionPerformed(evt);
             }
         });
+
+        jLabel2.setText("Links syntax");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -80,23 +109,22 @@ public class Settings extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(26, 26, 26)
+                                .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtParams))
-                            .addComponent(jLabel3))
-                        .addContainerGap(55, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btnDelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnAddToSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(jScrollPane1)
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(btnDelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnAddToSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                         .addGap(33, 33, 33))))
         );
         jPanel1Layout.setVerticalGroup(
@@ -107,19 +135,17 @@ public class Settings extends javax.swing.JDialog {
                     .addComponent(jLabel1)
                     .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(txtParams, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
-                .addGap(18, 18, 18)
+                    .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(19, 19, 19)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnAddToSearch)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnDelSearch))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                        .addComponent(btnDelSearch)))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("tab1", jPanel1);
@@ -128,14 +154,15 @@ public class Settings extends javax.swing.JDialog {
 
         jLabel5.setText("Type   ");
 
-        lstSaveHtmlTags.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        lstSaveHtmlTags.setModel(new DefaultListModel());
         jScrollPane2.setViewportView(lstSaveHtmlTags);
 
         btnAddToTags.setText("Add ");
+        btnAddToTags.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddToTagsActionPerformed(evt);
+            }
+        });
 
         btnDelTags.setText("Delete");
         btnDelTags.addActionListener(new java.awt.event.ActionListener() {
@@ -145,6 +172,11 @@ public class Settings extends javax.swing.JDialog {
         });
 
         cboParseType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "tag", "class", "id" }));
+        cboParseType.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cboParseTypeItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -166,8 +198,8 @@ public class Settings extends javax.swing.JDialog {
                                     .addComponent(cboParseType, 0, 279, Short.MAX_VALUE))))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnDelTags, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnAddToTags, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -192,8 +224,8 @@ public class Settings extends javax.swing.JDialog {
                         .addComponent(btnAddToTags)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnDelTags))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("tab2", jPanel2);
@@ -213,16 +245,109 @@ public class Settings extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     public Settings() {
-       // this.lstSavedSearchEngines = lstSavedSearchEngines;
+        // this.lstSavedSearchEngines = lstSavedSearchEngines;
     }
 
     private void btnDelSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelSearchActionPerformed
-        // TODO add your handling code here:
+         
+        Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+         ArrayList list = (ArrayList) prop.get("USER_SEARCH");
+        
+        Object value =  ((JList) lstSavedSearchEngines).getSelectedValue();
+        SearchObject o = (SearchObject)value;
+        if (o.getSearchEngine().equals("http://www.google.com/search?q=")
+                 || o.getSearchEngine().equals("https://duckduckgo.com/html/?q=")
+                   || o.getSearchEngine().equals("https://www.bing.com/search?q="))
+        {
+            JOptionPane.showMessageDialog(rootPane, "You can not delete system search engines");
+            return;
+            
+        }
+        ((DefaultListModel) ((JList) lstSavedSearchEngines).getModel()).removeElement(value);
+        list.remove(value);
+        PropertiesUI.getInstance().saveProperties();
+        
+       
     }//GEN-LAST:event_btnDelSearchActionPerformed
 
     private void btnDelTagsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelTagsActionPerformed
-        // TODO add your handling code here:
+         Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+        String type = (String) cboParseType.getSelectedItem();
+        ArrayList list = (ArrayList) prop.get(type);
+        String value = (String) ((JList) lstSaveHtmlTags).getSelectedValue();
+        ((DefaultListModel) ((JList) lstSaveHtmlTags).getModel()).removeElement(value);
+        list.remove(value);
+        PropertiesUI.getInstance().saveProperties();
     }//GEN-LAST:event_btnDelTagsActionPerformed
+
+    private void btnAddToTagsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddToTagsActionPerformed
+
+        Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+        if (!txtHtmlTagName.getText().isEmpty()) {
+            String type = (String) cboParseType.getSelectedItem();
+            ArrayList list = (ArrayList) prop.get(type);
+            if (list == null) {
+                list = new ArrayList();
+            }
+            if (!list.contains(txtHtmlTagName.getText())) {
+                list.add(txtHtmlTagName.getText());
+            }
+            prop.put(type, list); // save list
+            ((DefaultListModel) ((JList) lstSaveHtmlTags).getModel()).addElement(txtHtmlTagName.getText());
+            PropertiesUI.getInstance().saveProperties();
+        }
+    }//GEN-LAST:event_btnAddToTagsActionPerformed
+
+    private void cboParseTypeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboParseTypeItemStateChanged
+        String item = (String) evt.getItem();
+        Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+        ArrayList list = (ArrayList) prop.get(item);
+        ((DefaultListModel) ((JList) lstSaveHtmlTags).getModel()).clear();
+        if (list != null) {
+            Iterator it = list.iterator();
+            while (it.hasNext()) {
+                ((DefaultListModel) ((JList) lstSaveHtmlTags).getModel()).addElement(it.next());
+            }
+        }
+
+    }//GEN-LAST:event_cboParseTypeItemStateChanged
+
+    private void btnAddToSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddToSearchActionPerformed
+           Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+        if (!txtSearchURL.getText().isEmpty()) {
+            
+            ArrayList list = (ArrayList) prop.get("USER_SEARCH");
+            
+            if (list == null) {
+                list = new ArrayList();
+            }
+            Iterator loop = list.iterator();
+            boolean hasFound = false;
+            while(loop.hasNext())
+            {
+                if (loop.next().toString().equals(txtSearchURL.getText()))
+                {
+                    hasFound = true;
+                    break;
+                }
+            }
+            if (!hasFound) {
+                SearchObject s = new SearchObject();
+                s.setSearchEngine(txtSearchURL.getText());
+                s.setLinksRegex(txtSearchSyntax.getText());
+                list.add(s);
+            }
+            prop.put("USER_SEARCH", list); // save list
+            ((DefaultListModel) ((JList) lstSavedSearchEngines).getModel()).addElement(txtSearchURL.getText());
+            PropertiesUI.getInstance().saveProperties();
+        }
+    }//GEN-LAST:event_btnAddToSearchActionPerformed
+
+    private void lstSavedSearchEnginesValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstSavedSearchEnginesValueChanged
+        SearchObject o = (SearchObject)((JList)evt.getSource()).getSelectedValue();
+        txtSearchURL.setText(o.getSearchEngine());
+        txtSearchSyntax.setText(o.getLinksRegex());
+    }//GEN-LAST:event_lstSavedSearchEnginesValueChanged
 
     /**
      * @param args the command line arguments
@@ -274,7 +399,6 @@ public class Settings extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cboParseType;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -286,7 +410,7 @@ public class Settings extends javax.swing.JDialog {
     private javax.swing.JList<String> lstSaveHtmlTags;
     private javax.swing.JList<String> lstSavedSearchEngines;
     private javax.swing.JTextField txtHtmlTagName;
-    private javax.swing.JTextField txtParams;
+    private javax.swing.JTextField txtSearchSyntax;
     private javax.swing.JTextField txtSearchURL;
     // End of variables declaration//GEN-END:variables
 }

@@ -73,5 +73,19 @@ public class LinksObject implements Serializable{
         this.wordCount = wordCount;
     }
 
+    @Override
+    public String toString() {
+        return this.link; //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.link.equals(obj.toString()); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+    
+    
+
   
 }

@@ -5,12 +5,15 @@
  */
 package articlecreator.gui.components;
 
+import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.ProjectItem;
 import articlecreator.gui.components.ui.FileChooserUI;
 import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
@@ -20,7 +23,9 @@ import java.util.Iterator;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -35,6 +40,7 @@ public class OpenPoject extends javax.swing.JPanel {
     //private Hashtable defaultProperties;
     // private DefaultListModel projectListModel;
     // private JList projectList;
+    private JPopupMenu popupList;
     private JFileChooser chooser;
     public static final String CURRENT_DIR = System.getProperty("user.dir");
     private ProjectItem selectedObj;
@@ -58,6 +64,27 @@ public class OpenPoject extends javax.swing.JPanel {
         setLayout(new FlowLayout());
         initComponents();
         parseSelectedObject();
+
+        popupList = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem();
+
+        menuItem.setAction(new ActionsUI().new PasteAction());
+        popupList.add(menuItem);
+        txtKeyWords.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            private void ShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    popupList.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
 
     }
 
@@ -350,7 +377,7 @@ public class OpenPoject extends javax.swing.JPanel {
         while (true) { // To keep chooser open if open a directory, then press open button
 
             chooser = new FileChooserUI().createFileChooser(FileChooserUI.FILE_ONLY);
-              chooser.setAcceptAllFileFilterUsed(true);
+            chooser.setAcceptAllFileFilterUsed(true);
             //chooser.rescanCurrentDirectory();
             int returnVal = chooser.showOpenDialog(OpenPoject.this);
             File file = chooser.getSelectedFile();
@@ -398,7 +425,7 @@ public class OpenPoject extends javax.swing.JPanel {
                     //  String wordCnt = (String)ob.get("wordCnt");
                     //  if (wordCnt == null) wordCnt = "";
                     String[] values = {obj.getKeyWord(),
-                         obj.getTitle(), obj.getLink(), obj.getWordCount()};
+                        obj.getTitle(), obj.getLink(), obj.getWordCount()};
                     tableModel.addRow(values);
                 }
             }

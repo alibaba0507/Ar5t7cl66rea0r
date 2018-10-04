@@ -10,9 +10,12 @@ import articlecreator.gui.MyInternalFrame;
 import articlecreator.gui.components.LinksObject;
 import articlecreator.gui.components.OpenPoject;
 import articlecreator.net.ConnectionManagerUI;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -23,32 +26,43 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.InternalFrameUI;
+import javax.swing.text.JTextComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import sun.security.ssl.SSLSocketImpl;
 import za.co.utils.AWTUtils;
 
 /**
@@ -56,7 +70,7 @@ import za.co.utils.AWTUtils;
  * @author alibaba0507
  */
 public class ActionsUI {
-
+static ScheduledFuture t;
     private String message[] = {
         " ",
         " ",
@@ -171,8 +185,7 @@ public class ActionsUI {
 
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
-            JOptionPane.showConfirmDialog(null, "Open File Not Implemented yet ...");
-            //openFile(null);
+            //  JOptionPane.showConfirmDialog(null, "Open File Not Implemented yet ...");
 
         }
     } // End NewAction
@@ -255,7 +268,27 @@ public class ActionsUI {
 
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
-            JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
+            Component cmp = ((JMenuItem) e.getSource()).getParent();
+            if (cmp instanceof JPopupMenu) {
+                cmp = ((JPopupMenu) cmp).getInvoker();
+            } else {
+                return;
+            }
+            try {
+                // Create a Clipboard object using getSystemClipboard() method
+                Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+                // Get data stored in the clipboard that is in the form of a string (text)
+                if (cmp instanceof JTextComponent) {
+                    String keyWords = c.getData(DataFlavor.stringFlavor).toString();
+                    keyWords = keyWords.replaceAll("(\r\n|\n)", ",");
+                    ((JTextComponent) cmp).setText(keyWords);
+                }
+                //ProjectsUI.console.append(c.getData(DataFlavor.stringFlavor).toString() + "\r\n");
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             //openFile(null);
 
         }
@@ -333,15 +366,52 @@ public class ActionsUI {
 
     public class StopAction extends AbstractAction {
 
+        private boolean hasStarted = false;
+        private java.util.Timer timer;
+         
         public StopAction() {
-            super("Stop", new ImageIcon(AWTUtils.getIcon(null, "/images/Stop24.gif")));
+            super("Stop", new ImageIcon(AWTUtils.getIcon(null, "/images/go.png")));
+            //executor = new ScheduledThreadPoolExecutor(5);
+            timer = new java.util.Timer();
         }
 
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
-            JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
+            //JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
+            if (hasStarted) {
+                hasStarted = false;
+                putValue(Action.SMALL_ICON, new ImageIcon(AWTUtils.getIcon(null, "/images/go.png")));
+                stopProces();
+            } else {
+                hasStarted = true;
+                putValue(Action.SMALL_ICON, new ImageIcon(AWTUtils.getIcon(null, "/images/stop.png")));
+
+                startPocess();
+            }
             //openFile(null);
 
+        }
+
+        private void newSchedule() {
+            timer = new java.util.Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                extractArticles();
+                }
+            }, 1000, 30 * 1000);
+          
+        }
+
+        private void stopProces() {
+            timer.cancel();
+            
+        }
+
+        private void startPocess() {
+           
+                newSchedule();
+           
         }
     } // End NewAction
 
@@ -372,66 +442,106 @@ public class ActionsUI {
 
         }
     } // End NewAction
-    
-    public class ExtractArticlesAction extends AbstractAction{
+
+    public class ExtractArticlesAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-         ScheduledThreadPoolExecutor t = new ScheduledThreadPoolExecutor(5);
-         t.scheduleAtFixedRate(new Runnable() {
-             @Override
-             public void run() {
-               extractArticles();
-             }
-         }, 1, 1, TimeUnit.SECONDS);
+            ScheduledThreadPoolExecutor t = new ScheduledThreadPoolExecutor(5);
+            t.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    extractArticles();
+                }
+            }, 10, 200, TimeUnit.SECONDS);
+
         }
     }
-    
-    private void extractArticles()
-    {
-         String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
+
+    private void extractArticles() {
+        String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
         if (projProperties == null || projProperties.isEmpty()) {
             return; // nothing to do
         }
-         JSONObject savedProjJSON = new JSONObject();
+        JSONObject savedProjJSON = new JSONObject();
         JSONParser parser = new JSONParser();
         try {
             savedProjJSON = (JSONObject) parser.parse(projProperties);
-            JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
-            Iterator<JSONObject> objs = projectsJSON.iterator();
-            int selectedIndex = 0;
-            int cnt = 0;
-            while (objs.hasNext()) {
-                final JSONObject p = (JSONObject) objs.next();
-                String dir = (String) p.get("dir");
-                
-                // key = keyWord , value = array of LinkObject
-                Hashtable dirProp = PropertiesUI.getInstance().initProjectProperties(dir);
-                Iterator it = dirProp.keySet().iterator();
-                while (it.hasNext())
-                {
-                 ArrayList l = (ArrayList)dirProp.get(it.next());
-                 for (int i = 0;i < l.size();i++)
-                 {
-                     LinksObject link = (LinksObject)l.get(i);
-                     if (link.getWordCount() == null || link.getWordCount().equals(""))
-                     {
-                         processArticle(link);
-                     }
-                 }// end for
-                }// end while
-            }
-        }catch (Exception e)
-        {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
+        Iterator<JSONObject> objs = projectsJSON.iterator();
+        int selectedIndex = 0;
+        int cnt = 0;
+        while (objs.hasNext()) {
+            final JSONObject p = (JSONObject) objs.next();
+            String dir = (String) p.get("dir");
+            String name = (String) p.get("name");
+            // key = keyWord , value = array of LinkObject
+            Hashtable dirProp = PropertiesUI.getInstance().initProjectProperties(dir);
+            Iterator it = dirProp.keySet().iterator();
+            URL url = null;
+            while (it.hasNext()) {
+                ArrayList l = (ArrayList) dirProp.get(it.next());
+                for (int i = 0; i < l.size(); i++) {
+                    LinksObject link = (LinksObject) l.get(i);
+                    if (link.getWordCount() == null || link.getWordCount().equals("")
+                            /*|| Integer.parseInt(link.getWordCount()) < 50*/) {
+                        try {
+                            processArticle(link, dir);
+                           if (link.getWordCount() == null || link.getWordCount().equals(""))
+                                   link.setWordCount("1");
+                            ProjectsUI.console.append(">>>>> Parsing aricle ... [" + link.getTitle() + "] >>>>\r\n");
+                          url = new URL(link.getLink());
+                        } catch (Exception io) {
+                               // io.printStackTrace();
+                               if (io.getMessage().contains("unrecognized_name"))
+                               {
+                                   
+                                   dissableSSL(url);
+                                   link.setWordCount("1");
+                               }
+                                 ProjectsUI.console.append(" >>>> CONNECTION ERROR [" + io.getMessage() + "]\r\n");
+                        }
+                    }
+
+                    PropertiesUI.getInstance().saveProjectPoerties(dirProp, dir);
+                    InnerFramesUI.getInstance().refreshLinkByFrameName(name);
+                }// end for
+            }// end while
+        }
+        //}catch (Exception e)
+        //{
+        //   e.printStackTrace();
+        //  ProjectsUI.console.append(" >>>> CONNECTION ERROR [" + e.getMessage() + "]\r\n");
+        //  ProjectsUI.console.append(" >>>> Will Resume after [" + (200/60) + "]Minutes\r\n");
+        //}
     }
     
-    private void  processArticle(LinksObject link) throws Exception
+    private void dissableSSL(URL url)
     {
-        ConnectionManagerUI con = new ConnectionManagerUI();
-        con.processArticle(link);
+         try{
+              String baseUri = (new StringBuilder()).append(url.getProtocol()).append("://")
+                .append(url.getPath())
+                .toString(); 
+                SSLSocketFactory factory =
+                (SSLSocketFactory)SSLSocketFactory.getDefault();
+            SSLSocket socket =
+                (SSLSocket)factory.createSocket(baseUri, 80);
+            socket.startHandshake();
+
+
+         }catch (Exception e)
+         {
+             
+         }
     }
+    private void processArticle(LinksObject link, String dir) throws Exception {
+        ConnectionManagerUI con = new ConnectionManagerUI();
+        con.processArticle(link, dir);
+    }
+
     public class RunProjectAction extends AbstractAction {
 
         public RunProjectAction() {
@@ -469,8 +579,8 @@ public class ActionsUI {
             String name = (String) savedProjJSON.get("name");
             dir = (String) savedProjJSON.get("dir");
             keyWords = (String) savedProjJSON.get("keyWords");
-            Hashtable prop = new Hashtable();//PropertiesUI.getInstance().initProjectProperties(dir);
-            PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
+            Hashtable prop =  PropertiesUI.getInstance().initProjectProperties(dir);// new Hashtable();//PropertiesUI.getInstance().initProjectProperties(dir);
+           // PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
             ProjectsUI.console.append(" Starting Extraction of Links for " + name + "\r\n");
             saveLinksForKeyWords(dir, prop, keyWords);
             InnerFramesUI.getInstance().refreshLinkByFrameName(name);
@@ -487,7 +597,18 @@ public class ActionsUI {
             try {
                 synchronized (this) {
                     ProjectsUI.console.append(" -- Extractiong Links for --> " + keyWord[i] + " ....\r\n");
-                    ArrayList res = con.searchForLinks( keyWord[i], null);
+                    ArrayList res = con.searchForLinks(keyWord[i], 0);
+                    ArrayList oldList = (ArrayList)prop.get(keyWord[i]);
+                    if (oldList != null)
+                    {
+                        Iterator it = oldList.iterator();
+                        while(it.hasNext())
+                        {
+                           Object old = it.next();
+                           if (!res.contains(old))
+                               res.add(old);
+                        }
+                    }
                     prop.put(keyWord[i], res);
                     wait(800);
                 }
@@ -578,6 +699,8 @@ public class ActionsUI {
     public void cutAndCopy(JTextArea textArea) {
         try {
             String s = textArea.getSelectedText();
+            if (cutAction == null)
+                return;
             if (s == null) {
                 cutAction.setEnabled(false);
                 copyAction.setEnabled(false);

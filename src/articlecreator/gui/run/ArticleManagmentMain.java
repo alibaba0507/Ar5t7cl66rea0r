@@ -24,6 +24,12 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -219,7 +225,7 @@ public class ArticleManagmentMain extends JFrame {
          console = new JTextArea();
          ProjectsUI.console = console;
         String setting = (String) PropertiesUI.getInstance().getDefaultProps().get("SETTING");
-        if (setting.equals("CUSTOM")) {
+        if (setting != null && setting.equals("CUSTOM")) {
             customizeTextArea(console, "CUSTOM_CONSOLE");
         } else {
             customizeTextArea(console, "DEFAULT_TEXTAREA");
@@ -290,6 +296,8 @@ public class ArticleManagmentMain extends JFrame {
         //TODO: Implement this later
 
         hasStartProcess = true;
+        // Start a process to extract articles if any
+      //  new ActionsUI().new ExtractArticlesAction().actionPerformed(null);
         /*
          articleExtractor = new ArticleExtractor(defaultProps, console);
         articleScanerTimer = new java.util.Timer();
@@ -300,6 +308,8 @@ public class ArticleManagmentMain extends JFrame {
     public void reloadProjectTree() {
         projectListModel.clear();
         String savedProjects = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
+        if (savedProjects == null)
+            return;
         JSONObject savedProjJSON = new JSONObject();
         JSONParser parser = new JSONParser();
         try {
@@ -683,6 +693,7 @@ public class ArticleManagmentMain extends JFrame {
         return (JInternalFrame) desktop.getSelectedFrame();
     }
 
+  
     class MnemonicTabbedPane extends JTabbedPane {
 
         Hashtable mnemonics = null;
