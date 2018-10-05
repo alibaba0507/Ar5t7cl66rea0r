@@ -1,0 +1,83 @@
+
+==================================================================================
+										< Tips >
+==================================================================================
+
+
+$$$ Samuel Huang, 12/01/2002
+$$$ Last updated: 05/05/2002
+
+ 
+Tip 0: Start the editor before reading so you know what the tip is talking about. 
+ 
+Tip 1: Use buttons on the tool bar to dynmically compile/run java file that currently
+       has the focus.
+
+Tip 2: Open recently used files easily by clicking File menu then choose from a list of
+       up to 9 most recently opend files.
+	    
+Tip 3: More than one java program can be run at the same time with a console window 
+       created for each running program. 
+       
+Tip 4: A running java process can be terminated by clicking the stop button from the
+       the tool bar. The process terminated will be associated with the currently
+       selected console, not currently selected java file. Toggle between console 
+       windows to choose which process to terminate if running more than one java
+       process.
+       
+Tip 5: Use JList labelled 'Consoles:' on the left hand side of the editor to switch
+       between different console windows at the bottom of the editor.
+       
+Tip 6: Highlight and mark a line in file by double clicking the line and come back
+       to it latter on by clicking on the item of the JList labelled 'Marked Lines:' 
+       on the left hand side of the editor. Another double-click of highlighted line
+       will dehighlight the line.
+       
+Tip 7: There is really no need to minimize any text file in order to see other opened
+       files. Just use the combo box near the top of the editor to switch between the
+       the files you want to see.
+       
+Tip 8: Font of currently selected file can be changed by playing around with combo
+       boxes and buttons near the upper right of the editor.
+       
+Tip 9: If the radio button on the tool bar is selected, any font change will be
+       applied to the current console window. 
+
+Tip 10: The color of current file/console can be changed dynamically by choosing
+        the menu Option/Editor or Option/Console.
+         
+Tip 11: Double clicking the list labelled 'Marked Lines:' will remove all marked 
+        lines of currently selected text file.
+        
+Tip 12: Define default text format and text font/color by choosing from the menu 
+        Option/Preferences.
+
+Tip 13: You can pick up some Swing tricks by studying the source code of MyEditor.	
+       
+Tip 14: Double clicking a line that contains class name and exception line number in
+        the console window will highlight the line first, then a single click on the
+        line will make the text file go to the line where exception happened if the
+        text file with the same class name as the highlighted line in console has
+ 	     focus.
+
+Tip 15: The menu Execute/'Run Command' allows the user to give arguments for running
+		  java application (e.g. java Test argument1 argument2).
+
+Tip 16: Right click of mouse brings up a handy popup menu in a text file and 
+        text field of most dialogs.
+
+Tip 17: Select a word first in file than press Find button from the tool will save 
+        you typing the word in the 'Find what:' text field.
+		  
+Tip 18: MyEditor now supports project build feature. All java files within the same
+        directory of the currently selected java file will be considered as part of 
+        the project files. Clicking on Build button from the tool bar will compile 
+        all java files within the same directory of the currently selected java file.
+
+Tip 19: Column number of current cursor on a text file, displayed in status field 
+        is not accurate due to variable tab size of JTextArea. A hard tab with tab size
+        3 do not alwasy move 3 empty spaces " " to the right. Please drop me an e-mail
+        if you know how to read column number of cursor on a JTextArea correctly.		  
+
+Tip 20: Keep the number of marked lines small (say 1 to 5) by dehighlighting unwanted
+		  lines regularly to move easily between useful lines.

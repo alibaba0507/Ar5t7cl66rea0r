@@ -1,0 +1,62 @@
+
+==================================================================================
+										< Thanks File >
+==================================================================================
+
+
+$$$ Samuel Huang, 29/01/2002
+$$$ Last updated: 29/01/2002
+
+
+$ Special Thanks and Credits go to the following people whose code/resources I make 
+  use of in MyEditor:
+  
+  * Matthew Robinson and Pavel Vorobiev: 
+    MyEditor makes heavy use of the Layout Manager DialogLayout.java and many code
+    tips from their book 'Swing', which can be downloaded freely from
+    http://www.spindoczine.com/sbe
+    
+  * Klaus Berg: 
+    For excellent pluggable file history mechanism class FileHistory.java. You can
+    read more of how to use it in 
+    http://www.javaworld.com/javaworld/javatips/jw-javatip119.html
+    
+  * Slava Pestov:
+    ColorOptionPanel.java is adapted from JEdit's ColorOptionPane.java by Slava Pestov.
+    You can see more of the editor 'JEdit' (which has more commercial strength than mine
+    ) and its open source code in http://www.jedit.org/ 
+    
+  * Davanum Srinivas:
+    For wheel mouse support package 'gui', which can be downloaded from 
+    http://sourceforge.net/projects/jmousewheel/
+   
+  * David M. Geary:
+    SuffixAwareFilter, JavaCodeFilter and TextFilter classes are copied and pasted
+    here from example 16-5 of 'Graphic Java 2, Mastering the JFC' by David M. Geary.
+    
+  * Sun's Java Look and Feel Graphics Repository:
+    For the icons I used for the toolbar from
+    http://developer.java.sun.com/developer/techDocs/hi/repository/
+    
+  * Photo library from the CD of the book 'Sams Teach Yourself Web Publishing With HTML 4'
+    by Laura Lemay:
+    The splash screen image is taken from there and edited.
+    
+  
+$ Finally anyone who paticipated in 
+
+   * Java connection forum 'Project Swing'
+     - http://forum.java.sun.com/
+     
+   * Google discussion forum in gui swing
+     - http://groups.google.com/groups?hl=en&group=comp.lang.java.gui
+     
+   * Sun's bug parade (a library of reported bugs and possible fixes)
+     - http://developer.java.sun.com/developer/bugParade/
+     
+   * You can always find solutions to your swing problems in these sites.
+   
+   
+ 
+ 
+
