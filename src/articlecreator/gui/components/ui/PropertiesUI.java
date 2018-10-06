@@ -68,7 +68,7 @@ public class PropertiesUI {
 
             o = new SearchObject();
             o.setSearchEngine("https://duckduckgo.com/html/?q=");
-            o.setLinksRegex("#links .results_links");
+            o.setLinksRegex("#links .results_links .links_main a");
             serchList.add(o);
 
             o = new SearchObject();

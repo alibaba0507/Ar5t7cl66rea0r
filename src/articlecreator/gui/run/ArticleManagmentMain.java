@@ -5,7 +5,7 @@
  */
 package articlecreator.gui.run;
 
-import articlecreator.gui.MyBasicTextAreaUI;
+//import articlecreator.gui.MyBasicTextAreaUI;
 import articlecreator.gui.components.Settings;
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.InnerFramesUI;
@@ -24,12 +24,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -67,8 +61,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
+ 
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.metal.MetalTabbedPaneUI;
 import org.json.simple.JSONArray;
@@ -85,31 +78,31 @@ public class ArticleManagmentMain extends JFrame {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String JAVA_HOME = System.getProperty("java.home");
     public static final String CURRENT_DIR = System.getProperty("user.dir");
+    public static final int MAX_AMOUNT_OF_BAD_WORDS = 100;
+    public static final String REQUEST_URL = "http://thesaurus.altervista.org/thesaurus/v1?";
+    public static final String MY_API_KEY = "zyQOWZsKlGVzWBGhc47S"; // "Thesaurus" API KEY
     // private ColorMenu foregroundMenu1, backgroundMenu1, foregroundMenu2, backgroundMenu2;
     private final JDesktopPane desktop;
     private final JToolBar toolBar;
     private final JMenuBar menuBar;
-    private JFileChooser chooser;
     private JPopupMenu popup;
     private JPopupMenu popupProj;
     private ActionsUI actions;
     private JList consolesList, projectList;
     private DefaultListModel consolesListModel, projectListModel;
-    private final JList markedLinesList;
+    //private final JList markedLinesList;
     private JSplitPane listSplit, hSplit;
     private ArrayList outputList = new ArrayList();
     private int console_count;
     private JViewport viewport;
-    private Object selectedProjectItem;
     private final JSplitPane vSplit;
     private final JComboBox cbFiles;
-    private final boolean hasStartProcess;
     private static ArticleManagmentMain instance;
     private  JTextArea console;
     public ArticleManagmentMain() {
         super("ArticleManagentSystem");
         if (ArticleManagmentMain.instance == null)
-             ArticleManagmentMain.instance = this;
+              ArticleManagmentMain.instance = this;
         desktop = new JDesktopPane();
         toolBar = new JToolBar();
         menuBar = new JMenuBar();
@@ -169,16 +162,16 @@ public class ArticleManagmentMain extends JFrame {
             iae.printStackTrace();
         }
 
-        JScrollPane commandScrollPane = new JScrollPane(consolesList);
+       // JScrollPane commandScrollPane = new JScrollPane(consolesList);
         JScrollPane projectsScrollPane = new JScrollPane(projectList);
 
-        JPanel commandPanel = new JPanel(new BorderLayout());
+        /*JPanel commandPanel = new JPanel(new BorderLayout());
         JLabel commandLabel = new JLabel("Consoles:");
         commandLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/History24.gif")));
         commandLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
         commandPanel.add(commandLabel, BorderLayout.NORTH);
         commandPanel.add(commandScrollPane, BorderLayout.CENTER);
-
+*/
         JPanel projectPanel = new JPanel(new BorderLayout());
         JLabel projectLabel = new JLabel("Projects:");
         projectLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/Open24.gif")));
@@ -193,27 +186,27 @@ public class ArticleManagmentMain extends JFrame {
         int[] keys = {KeyEvent.VK_0, KeyEvent.VK_1};
         tabbedPane.addTab(tabs[0], projectPanel);
         tabbedPane.setMnemonicAt(0, ms[0]);
-        tabbedPane.addTab(tabs[1], commandPanel);
-        tabbedPane.setMnemonicAt(1, ms[1]);
+       //tabbedPane.addTab(tabs[1], commandPanel);
+       // tabbedPane.setMnemonicAt(1, ms[1]);
         //tabbedPane.setMnemonicAt(i, keys[i]);
 
-        markedLinesList = new JList();
-        markedLinesList.setModel(new DefaultListModel());
-        markedLinesList.addListSelectionListener(new ActionsUI().new MarkedLinesListener(markedLinesList));
-        markedLinesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+       // markedLinesList = new JList();
+       // markedLinesList.setModel(new DefaultListModel());
+      //  markedLinesList.addListSelectionListener(new ActionsUI().new MarkedLinesListener(markedLinesList));
+      //  markedLinesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         Dimension dim = new Dimension(0, 0);
 
-        JScrollPane lineScrollPane = new JScrollPane(markedLinesList);
-        JPanel linePanel = new JPanel(new BorderLayout());
-        JLabel lineLabel = new JLabel("Marked Lines:");
+//        JScrollPane lineScrollPane = new JScrollPane(markedLinesList);
+      //  JPanel linePanel = new JPanel(new BorderLayout());
+  //      JLabel lineLabel = new JLabel("Marked Lines:");
 
-        lineLabel.addMouseListener(new ActionsUI().new LinesMouseListener(markedLinesList));
-        lineLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
-        linePanel.add(lineLabel, BorderLayout.NORTH);
-        linePanel.add(lineScrollPane, BorderLayout.CENTER);
+    //    lineLabel.addMouseListener(new ActionsUI().new LinesMouseListener(markedLinesList));
+    //    lineLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+     //   linePanel.add(lineLabel, BorderLayout.NORTH);
+     //   linePanel.add(lineScrollPane, BorderLayout.CENTER);
 
-        listSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabbedPane/*commandPanel*/, linePanel);
+        listSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabbedPane/*commandPanel*/, null/*linePanel*/);
         listSplit.setDividerLocation(140);
 
         hSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listSplit, desktop);
@@ -250,9 +243,9 @@ public class ArticleManagmentMain extends JFrame {
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         viewport = jsp.getViewport();
-        MyBasicTextAreaUI myUID = new MyBasicTextAreaUI(console, null, true);
-        myUID.setColor(getLineColor((String) PropertiesUI.getInstance().getDefaultProps().get("SETTING"), "CONSOLE"));
-        console.setUI(myUID);
+      //  MyBasicTextAreaUI myUID = new MyBasicTextAreaUI(console, null, true);
+      //  myUID.setColor(getLineColor((String) PropertiesUI.getInstance().getDefaultProps().get("SETTING"), "CONSOLE"));
+       // console.setUI(myUID);
         //console.addMouseListener(new ConsoleMouseListener(console, myUID, this));
         console.setText("JUST TO TEST >>>>");
         consolesList.setSelectedIndex(0);
@@ -295,7 +288,7 @@ public class ArticleManagmentMain extends JFrame {
         // This is where  the articles get scann
         //TODO: Implement this later
 
-        hasStartProcess = true;
+        //hasStartProcess = true;
         // Start a process to extract articles if any
       //  new ActionsUI().new ExtractArticlesAction().actionPerformed(null);
         /*

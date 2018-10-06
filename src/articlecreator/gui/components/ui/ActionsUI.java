@@ -49,6 +49,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
@@ -59,6 +60,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.InternalFrameUI;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -163,6 +165,56 @@ public class ActionsUI {
 
         }
     } // End CloseListener
+
+    public class CleanSelectedArticles extends AbstractAction {
+        private OpenPoject comp;
+        public CleanSelectedArticles(OpenPoject comp) {
+            super("Clean Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/Delete24.png")));
+            // new Throwable().printStackTrace();
+            this.comp = comp;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            JTable tbl =  (JTable)((JPopupMenu)((JMenuItem)e.getSource()).getParent()).getInvoker();
+            int[] selectedRows = tbl.getSelectedRows();
+            ConnectionManagerUI con = new ConnectionManagerUI();
+            for (int i = 0;i < selectedRows.length;i++){
+               String keyWord =  (String)((DefaultTableModel)tbl.getModel()).getValueAt(selectedRows[i], 0);
+               String url =  (String)((DefaultTableModel)tbl.getModel()).getValueAt(selectedRows[i], 2);
+               String projDir = this.comp.getProjectDir();
+               Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
+               ArrayList links = (ArrayList) prop.get(keyWord);
+                Iterator jsonIt = links.iterator();
+                while (jsonIt.hasNext()) {
+                    LinksObject obj = (LinksObject) jsonIt.next();
+                    if (obj.equals(url) && obj.getWordCount() != null 
+                              && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/)
+                    {
+                        con.cleanFile(obj.getLocalHTMLFile());
+                    }
+                }
+             
+            }
+        }
+
+    }
+
+    public class SpinSelectedArticles extends AbstractAction {
+        private OpenPoject comp;
+        public SpinSelectedArticles(OpenPoject comp) {
+            super("Spin Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/articleSpin24.png")));
+            // new Throwable().printStackTrace();
+           this.comp  = comp;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+    }
 
     public class NewAction extends AbstractAction {
 
@@ -803,66 +855,6 @@ public class ActionsUI {
         }
         PropertiesUI.getInstance().saveProjectPoerties(prop, dir);
         ProjectsUI.console.append(" >>>>> Finish extracting links");
-    }
-
-    // Double click on 'Marked Lines:' label clears all marked lines
-    // of current text area.
-    public class LinesMouseListener extends MouseAdapter {
-
-        private JList markedLinesList;
-
-        public LinesMouseListener(JList markedLinesList) {
-            super();
-            this.markedLinesList = markedLinesList;
-        }
-
-        public void mousePressed(MouseEvent e) {
-            int click = e.getClickCount();
-            if (click == 2) {
-                MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
-                if (frame == null) {
-                    return;
-                }
-                JTextArea textArea = frame.getJTextArea();
-                MyBasicTextAreaUI myUI = (MyBasicTextAreaUI) textArea.getUI();
-                myUI.setPositions(new ArrayList());
-                DefaultListModel model = (DefaultListModel) markedLinesList.getModel();
-                model.clear();
-                textArea.repaint(); // Reflect changes
-            }
-        }
-    }
-
-    // Listener for JList markedLinesList
-    //
-    public class MarkedLinesListener implements ListSelectionListener {
-
-        private JList markedLinesList;
-
-        public MarkedLinesListener(JList markedLinesList) {
-            super();
-            this.markedLinesList = markedLinesList;
-        }
-
-        public void valueChanged(ListSelectionEvent e) {
-            int i = markedLinesList.getSelectedIndex();
-            if (i != -1) {
-                MyInternalFrame frame = InnerFramesUI.getInstance().getSelectedFrame();
-                if (frame != null) {
-                    JScrollPane jsp = frame.getScrollPane();
-                    JViewport vp = jsp.getViewport();
-                    JTextArea textArea = frame.getJTextArea();
-                    int h = textArea.getFontMetrics(textArea.getFont()).getHeight();
-                    String item = (String) markedLinesList.getSelectedValue();
-                    item = item.substring(item.lastIndexOf(" ") + 1);
-                    Integer Int = new Integer(item);
-                    int n = Int.intValue();
-                    Point p = new Point(0, h * (n - 1));
-                    vp.setViewPosition(p);
-                    frame.show();
-                }
-            }
-        }
     }
 
     // Enable copy action when console has selected text.

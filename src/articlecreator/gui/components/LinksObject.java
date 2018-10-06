@@ -17,6 +17,11 @@ public class LinksObject implements Serializable{
     private String link;
     private String wordCount;
     
+    private String localHTMLFile;
+    private String localTXTFile;
+    private String localSpinFile;
+    
+    
     /**
      * @return the keyWord
      */
@@ -75,12 +80,54 @@ public class LinksObject implements Serializable{
 
     @Override
     public String toString() {
-        return this.link; //To change body of generated methods, choose Tools | Templates.
+        return this.getLink(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this.link.equals(obj.toString()); //To change body of generated methods, choose Tools | Templates.
+        return this.getLink().equals(obj.toString()); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * @return the localHTMLFile
+     */
+    public String getLocalHTMLFile() {
+        return localHTMLFile;
+    }
+
+    /**
+     * @param localHTMLFile the localHTMLFile to set
+     */
+    public void setLocalHTMLFile(String localHTMLFile) {
+        this.localHTMLFile = localHTMLFile;
+    }
+
+    /**
+     * @return the localTXTFile
+     */
+    public String getLocalTXTFile() {
+        return localTXTFile;
+    }
+
+    /**
+     * @param localTXTFile the localTXTFile to set
+     */
+    public void setLocalTXTFile(String localTXTFile) {
+        this.localTXTFile = localTXTFile;
+    }
+
+    /**
+     * @return the localSpinFile
+     */
+    public String getLocalSpinFile() {
+        return localSpinFile;
+    }
+
+    /**
+     * @param localSpinFile the localSpinFile to set
+     */
+    public void setLocalSpinFile(String localSpinFile) {
+        this.localSpinFile = localSpinFile;
     }
     
     

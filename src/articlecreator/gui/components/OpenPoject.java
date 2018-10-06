@@ -10,13 +10,17 @@ import articlecreator.gui.components.ui.ProjectItem;
 import articlecreator.gui.components.ui.FileChooserUI;
 import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
+import articlecreator.net.ConnectionManagerUI;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -26,10 +30,13 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.EditorKit;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.jsoup.nodes.Document;
 
 /**
  *
@@ -44,6 +51,8 @@ public class OpenPoject extends javax.swing.JPanel {
     private JFileChooser chooser;
     public static final String CURRENT_DIR = System.getProperty("user.dir");
     private ProjectItem selectedObj;
+    private JPopupMenu popupArticleList;
+    private String objectDir;
 
     /**
      * Creates new form OpenPoject
@@ -59,12 +68,40 @@ public class OpenPoject extends javax.swing.JPanel {
         if (ProjectsUI.selectedProjectItem != null
                 && ProjectsUI.selectedProjectItem instanceof ProjectItem) {
             this.selectedObj = (ProjectItem) ProjectsUI.selectedProjectItem;
+            //this.objectDir = ((ProjectItem)ProjectsUI.selectedProjectItem).
         }
         //this.defaultProperties = defaultProperties;
         setLayout(new FlowLayout());
-        initComponents();
-        parseSelectedObject();
 
+        initComponents();
+        jPanel1.setPreferredSize(new Dimension(400, 450));
+        jPanel2.setPreferredSize(new Dimension(400, 450));
+        jPanel3.setPreferredSize(new Dimension(400, 450));
+
+        jScrollPane3.setPreferredSize(new Dimension(300, 350));
+        jScrollPane2.setPreferredSize(new Dimension(300, 350));
+        // txtWebView.setSize(550, 550);
+        //jPanel3.setSize(650,650);
+        DefaultTableModel tblModel = new DefaultTableModel(new Object[][]{
+            {null, null, null, null}
+        },
+                new String[]{
+                    "Key Words", "Title", "URL", "Words Count"
+                }) {
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
+        jTable1.setModel(tblModel);
+        parseSelectedObject();
+        String type = ("text/html");
+        final EditorKit kit = txtWebView.getEditorKitForContentType(type);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                txtWebView.setEditorKit(kit);
+            }
+        });
         popupList = new JPopupMenu();
         JMenuItem menuItem = new JMenuItem();
 
@@ -82,6 +119,71 @@ public class OpenPoject extends javax.swing.JPanel {
             private void ShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     popupList.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
+
+        popupArticleList = new JPopupMenu();
+        final JMenuItem menuItemArticles = new JMenuItem();
+        menuItemArticles.setAction(new ActionsUI().new CleanSelectedArticles(this));
+        menuItemArticles.setAction(new ActionsUI().new SpinSelectedArticles(this));
+        popupArticleList.add(menuItemArticles);
+        jTable1.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent event) {
+                if (event.getClickCount() == 2) {
+                    Hashtable prop = PropertiesUI.getInstance().initProjectProperties(objectDir);
+                    int row = jTable1.getSelectedRow();
+                    String keyWord = (String) ((DefaultTableModel) jTable1.getModel()).getValueAt(row, 0);
+                    String url = (String) ((DefaultTableModel) jTable1.getModel()).getValueAt(row, 2);
+                    ArrayList l = (ArrayList) prop.get(keyWord);
+                    Iterator it = l.iterator();
+                    while (it.hasNext()) {
+                        LinksObject obj = (LinksObject) it.next();
+                        if (obj.equals(url)) {
+                            if (obj.getLocalHTMLFile() == null || obj.getLocalHTMLFile().equals("")) {
+                                break;
+                            }
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Cursor cursor = OpenPoject.this.getParent().getCursor();
+                                    OpenPoject.this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                    Document doc = new ConnectionManagerUI().openFile(obj.getLocalHTMLFile());
+                                    Document docSpin = new ConnectionManagerUI().spinFile(obj.getLocalHTMLFile());
+                                    if (doc != null) {
+                                        txtWebView.setText(doc.outerHtml());
+                                        jTabbedPane1.setSelectedIndex(2);
+                                        txtWebView.setCaretPosition(0);
+                                        txtWebView.getCaret().setSelectionVisible(true);
+                                        // this will move scroll to the top for JEDitor
+                                        jScrollPane3.getVerticalScrollBar().setValue(0);
+                                    }
+                                    OpenPoject.this.getParent().setCursor(cursor);
+
+                                }
+                            });
+
+                        }
+                    }
+                }
+            }
+
+            public void mousePressed(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                ShowPopup(e);
+            }
+
+            private void ShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    if (jTable1.getSelectedRows().length > 0) {
+                        menuItemArticles.setEnabled(true);
+                    } else {
+                        menuItemArticles.setEnabled(false);
+                    }
+                    popupArticleList.show(e.getComponent(), e.getX(), e.getY());
                 }
             }
         });
@@ -113,6 +215,9 @@ public class OpenPoject extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        txtWebView = new javax.swing.JEditorPane();
 
         jLabel4.setText("Or comma separated");
 
@@ -229,34 +334,27 @@ public class OpenPoject extends javax.swing.JPanel {
 
         jTabbedPane1.addTab("tab1", jPanel1);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        jPanel2.setMaximumSize(new java.awt.Dimension(550, 550));
+        jPanel2.setLayout(new java.awt.BorderLayout());
 
-                {null, null, null, null}
-            },
-            new String [] {
-                "Key Words", "Title", "URL", "Words Count"
-            }
-        ));
+        jScrollPane2.setHorizontalScrollBar(null);
+        jScrollPane2.setMaximumSize(new java.awt.Dimension(780, 800));
+
         jScrollPane2.setViewportView(jTable1);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        jPanel2.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
         jTabbedPane1.addTab("tab2", jPanel2);
+
+        jPanel3.setMaximumSize(new java.awt.Dimension(550, 550));
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        txtWebView.setMaximumSize(new java.awt.Dimension(550, 550));
+        jScrollPane3.setViewportView(txtWebView);
+
+        jPanel3.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
+        jTabbedPane1.addTab("tab4", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -383,7 +481,11 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_btnImportActionPerformed
-
+    
+    public String getProjectDir()
+    {
+        return this.objectDir;
+    }
     public void refreshLinksTable() {
         try {
             DefaultTableModel tableModel = (DefaultTableModel) jTable1.getModel();
@@ -394,7 +496,7 @@ public class OpenPoject extends javax.swing.JPanel {
             jTable1.getColumnModel().getColumn(1).setPreferredWidth(100);
             jTable1.getColumnModel().getColumn(2).setPreferredWidth(350);
             jTable1.getColumnModel().getColumn(3).setPreferredWidth(10);
-            String dir = txtProjectDirectory.getText();
+            String dir = this.objectDir;
             if (dir == null || dir.equals("")) {
                 return;
             }
@@ -435,6 +537,7 @@ public class OpenPoject extends javax.swing.JPanel {
             txtProjName.setText((String) p.get("name"));
             txtKeyWords.setText((String) p.get("keyWords"));
             txtProjectDirectory.setText((String) p.get("dir"));
+            this.objectDir = (String) p.get("dir");
             refreshLinksTable();
         } catch (Exception e) {
             e.printStackTrace();
@@ -494,13 +597,16 @@ public class OpenPoject extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextArea txtKeyWords;
     private javax.swing.JTextField txtProjName;
     private javax.swing.JTextField txtProjectDirectory;
+    private javax.swing.JEditorPane txtWebView;
     // End of variables declaration//GEN-END:variables
 
 }

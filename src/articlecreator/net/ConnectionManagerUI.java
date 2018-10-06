@@ -10,6 +10,7 @@ import articlecreator.gui.components.SearchObject;
 import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.run.ArticleManagmentMain;
+import articlecreator.spin.syntax.Engine;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,12 +20,15 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 /**
@@ -40,10 +44,78 @@ public class ConnectionManagerUI {
     private final static String GOOGLE_REGEX_SEARCH = "h3.r a";
     private final static String DUCKGO_REGEX_SEARCH = "#links .results_links";
      */
+    public Document openFile(String url) {
+        Document doc = null;
+        try {
+            doc = Jsoup.parse(new File(url), "UTF-8");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return doc;
+        }
+    }
+
+    public Document cleanFile(String url) {
+        Document doc = null;
+        try {
+            Engine spinEngine = new Engine();
+            doc = Jsoup.parse(new File(url), "UTF-8");
+            Elements els = doc.body().getAllElements();
+            for (Element e : els) {
+                List<TextNode> tnList = e.textNodes();
+
+                for (TextNode tn : tnList) {
+                    String orig = tn.text();
+                    if (orig == null || orig.equals("")) {
+                        tnList.remove(tn);
+                    }
+                    //String newPhrase = spinEngine.update(orig, false);
+                    // ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + newPhrase.trim() + " ---- ");
+                    //  tn.text(orig.replaceAll("changeme", "<changed>changeme</changed>"));
+                }
+            }// end for
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return doc;
+        }
+    }
+
+    public Document spinFile(String url) {
+        Document doc = null;
+        try {
+            Engine spinEngine = new Engine();
+            doc = Jsoup.parse(new File(url), "UTF-8");
+            Elements els = doc.body().getAllElements();
+            for (Element e : els) {
+                List<TextNode> tnList = e.textNodes();
+                for (TextNode tn : tnList) {
+                    String orig = tn.text();
+                    String newPhrase = spinEngine.update(orig, false);
+                    // ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + newPhrase.trim() + " ---- ");
+                    //  tn.text(orig.replaceAll("changeme", "<changed>changeme</changed>"));
+                }
+            }// end for
+
+            // Overide the document
+            final File f = new File(url);
+            PrintWriter writer = new PrintWriter(f, "UTF-8");
+            writer.write(doc.outerHtml());
+            writer.flush();
+            writer.close();
+            //html = doc.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return doc;
+        }
+    }
+
     public void processArticle(LinksObject link, String dir) throws Exception {
         Document doc = crawl(link.getLink(), null);
         // remove script and hidden shit 
-        doc.select("script,.hidden,form").remove();
+        doc.select("script,.hidden,form,a,footer").remove();
         URL url = new URL(link.getLink());
         // base URI will be used within the loop below
         String baseUri = (new StringBuilder())
@@ -100,17 +172,19 @@ public class ConnectionManagerUI {
         writer.write(posts.outerHtml());
         writer.flush();
         writer.close();
+        link.setLocalHTMLFile(f.toString());
         // Write text only
         final File fTXT = new File(dir + ArticleManagmentMain.FILE_SEPARATOR + title + ".txt");
         PrintWriter writerTXT = new PrintWriter(fTXT, "UTF-8");
         writerTXT.write(txtToSave);
         writerTXT.flush();
         writerTXT.close();
+        link.setLocalTXTFile(fTXT.toString());
         //FileUtils.writeStringToFile(f, doc.outerHtml(), "UTF-8");
 
     }
 
-    private Document crawl(String url, String cookies) throws IOException {
+    public Document crawl(String url, String cookies) throws IOException {
         if (cookies == null) {
             cookies = "";
         }
@@ -203,13 +277,14 @@ public class ConnectionManagerUI {
                 // we must try to change the engine
                 // if (searchEngine == GOOGLE_SEARCH_URL) {
                 Thread.sleep(3000);
-                return searchForLinks(keyWord, index + 1);
+                ProjectsUI.console.append(">>>> CALLING NEXT ENGINE [" + (index + 1) + "]\r\n");
+                return searchForLinks(keyWord, ++index);
                 // }
                 //else if (searchEngine == DUCKDUCKGO_SEARCH_URL)
             } else {
                 //JSONObject mainObj = new JSONObject();
                 // JSONArray arrJSON = new JSONArray();
-
+                ArrayList duplicateList = new ArrayList();
                 for (org.jsoup.nodes.Element link : links) {
                     final String title = link.text();
                     //  final String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
@@ -219,7 +294,12 @@ public class ConnectionManagerUI {
                     final String url = URLDecoder.decode(result, "UTF-8");
                     if (!url.startsWith("http")) {
                         continue; // Ads/news/etc.
+                    } else if (title == null || title.equals("") || title.equalsIgnoreCase("ad")) {
+                        continue;
+                    } else if (duplicateList.contains(url)) {
+                        continue;
                     }
+                    duplicateList.add(url);
                     //JSONObject o = new JSONObject();
                     //o.put("title", title);
                     //o.put("URL", url);
@@ -231,6 +311,7 @@ public class ConnectionManagerUI {
                     tbl.add(lnk);
                     ProjectsUI.console.append(" Link -> Title[" + title + "] \r\n");
                     ProjectsUI.console.append(" Link -> URL[" + url + "] \r\n");
+
                 } // end for
                 // mainObj.put(keyWord, arrJSON);
                 // JSONParser parser  =new JSONParser();
