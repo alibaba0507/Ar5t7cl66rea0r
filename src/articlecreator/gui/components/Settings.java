@@ -7,6 +7,8 @@ package articlecreator.gui.components;
 
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -18,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButton;
 import za.co.utils.AWTUtils;
 
 /**
@@ -103,6 +106,25 @@ public class Settings extends javax.swing.JDialog {
                 ((DefaultListModel)lstSaveHtmlTags.getModel()).addElement(lIt.next());
             }
         }
+        
+        String redirect = (String) PropertiesUI.getInstance().getDefaultProps().get("SEARCH_REDIRECT");
+        //boolean followRedirect = false;
+        btnRedirect.setSelected(false);
+        if (redirect != null && !redirect.equals("") && Integer.parseInt(redirect) > 0) {
+           btnRedirect.setSelected(true);
+            //followRedirect = true;
+        }
+        btnRedirect.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JRadioButton radioButton = (JRadioButton) e.getSource();
+                if (radioButton.isSelected()) {
+                     PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT","1");
+                }else
+                    PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT","0");
+
+            }
+        });
     }
 
     /**
@@ -124,6 +146,7 @@ public class Settings extends javax.swing.JDialog {
         btnDelSearch = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         txtSearchSyntax = new javax.swing.JTextField();
+        btnRedirect = new javax.swing.JRadioButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -163,6 +186,13 @@ public class Settings extends javax.swing.JDialog {
 
         jLabel2.setText("Links syntax");
 
+        btnRedirect.setText("Follow Redirect");
+        btnRedirect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRedirectActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -170,24 +200,29 @@ public class Settings extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnRedirect)
+                                .addContainerGap())
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnDelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnAddToSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(33, 33, 33))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addGap(26, 26, 26)
-                                .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jScrollPane1)
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(btnDelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btnAddToSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .addGap(33, 33, 33))))
+                                .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -206,7 +241,9 @@ public class Settings extends javax.swing.JDialog {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnAddToSearch)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnDelSearch)))
+                        .addComponent(btnDelSearch)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRedirect)))
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
@@ -394,6 +431,10 @@ public class Settings extends javax.swing.JDialog {
     private void txtHtmlTagNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtHtmlTagNameMouseReleased
         ShowPopup(evt);
     }//GEN-LAST:event_txtHtmlTagNameMouseReleased
+
+    private void btnRedirectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRedirectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnRedirectActionPerformed
     private void ShowPopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
             popupText.show(e.getComponent(), e.getX(), e.getY());
@@ -447,6 +488,7 @@ public class Settings extends javax.swing.JDialog {
     private javax.swing.JButton btnAddToTags;
     private javax.swing.JButton btnDelSearch;
     private javax.swing.JButton btnDelTags;
+    private javax.swing.JRadioButton btnRedirect;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;

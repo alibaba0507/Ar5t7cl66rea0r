@@ -64,7 +64,7 @@ public class Engine {
         synonymFinder.removeSynonymForWord(word);
     }
 
-    public String update(String text, boolean alignment) throws Exception {
+    public String update(String text,boolean alignment) throws Exception {
         text += " ";
         int buffer = 0;
         StringBuilder stringBuilder = new StringBuilder();

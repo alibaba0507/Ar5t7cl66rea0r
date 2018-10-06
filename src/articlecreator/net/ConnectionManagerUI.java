@@ -61,7 +61,18 @@ public class ConnectionManagerUI {
         try {
             Engine spinEngine = new Engine();
             doc = Jsoup.parse(new File(url), "UTF-8");
-            Elements els = doc.body().getAllElements();
+            for (Element element : doc.select("*")) {
+                if (!element.hasText() && element.isBlock()) {
+                    element.remove();
+                }
+            }
+            // Overide the document
+            final File f = new File(url);
+            PrintWriter writer = new PrintWriter(f, "UTF-8");
+            writer.write(doc.outerHtml());
+            writer.flush();
+            writer.close();
+            /*Elements els = doc.body().getAllElements();
             for (Element e : els) {
                 List<TextNode> tnList = e.textNodes();
 
@@ -75,6 +86,8 @@ public class ConnectionManagerUI {
                     //  tn.text(orig.replaceAll("changeme", "<changed>changeme</changed>"));
                 }
             }// end for
+             */
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -93,17 +106,32 @@ public class ConnectionManagerUI {
                 for (TextNode tn : tnList) {
                     String orig = tn.text();
                     String newPhrase = spinEngine.update(orig, false);
+                    if (!orig.equalsIgnoreCase(newPhrase)) {
+                        tn.text(orig.replaceAll(orig, newPhrase));
+                    }
                     // ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + newPhrase.trim() + " ---- ");
                     //  tn.text(orig.replaceAll("changeme", "<changed>changeme</changed>"));
                 }
             }// end for
 
-            // Overide the document
-            final File f = new File(url);
+            File f = new File(url);
+            String fileDirectory = f.getParent() + ArticleManagmentMain.FILE_SEPARATOR + "spin";
+            File copyDir = new File(fileDirectory);
+            if (!copyDir.exists()
+                    || !copyDir.isDirectory()) {
+                copyDir.mkdir();
+            }
+
+            f = new File(fileDirectory + ArticleManagmentMain.FILE_SEPARATOR + f.getName());
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+
             PrintWriter writer = new PrintWriter(f, "UTF-8");
             writer.write(doc.outerHtml());
             writer.flush();
             writer.close();
+
             //html = doc.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,9 +141,9 @@ public class ConnectionManagerUI {
     }
 
     public void processArticle(LinksObject link, String dir) throws Exception {
-        Document doc = crawl(link.getLink(), null);
+        Document doc = crawl(link.getLink(), null,true);
         // remove script and hidden shit 
-        doc.select("script,.hidden,form,a,footer").remove();
+        doc.select("script,.hidden,form,a,footer,button").remove();
         URL url = new URL(link.getLink());
         // base URI will be used within the loop below
         String baseUri = (new StringBuilder())
@@ -184,7 +212,7 @@ public class ConnectionManagerUI {
 
     }
 
-    public Document crawl(String url, String cookies) throws IOException {
+    public Document crawl(String url, String cookies, boolean isFollowRedirect) throws IOException {
         if (cookies == null) {
             cookies = "";
         }
@@ -202,7 +230,7 @@ public class ConnectionManagerUI {
 
         System.out.println(response.statusCode() + " : " + url);
 
-        if (response.hasHeader("location")) {
+        if (response.hasHeader("location") && isFollowRedirect) {
             String redirectUrl = response.header("location");
             Map<String, String> cookiesMap = response.cookies();
             cookies = "";
@@ -217,7 +245,7 @@ public class ConnectionManagerUI {
             }
             ProjectsUI.console.append(" Reirect [" + redirectUrl + "]\r\n");
             ProjectsUI.console.append(" Coocies [" + cookies + "]\r\n");
-            return crawl(redirectUrl, cookies);
+            return crawl(redirectUrl, cookies, isFollowRedirect);
         }
         String body = response.body();
         /*    ProjectsUI.console.append("BODY ================================\r\n");
@@ -264,9 +292,14 @@ public class ConnectionManagerUI {
         String urlEncode = searchEngine + URLEncoder.encode(search, charset);
         ProjectsUI.console.append(" Constracting URL [" + urlEncode + "] \r\n");
         // 3 seconds to not be rejected by search engine
-
-        Document doc = crawl(urlEncode, "");
-        if (doc != null) {
+        String redirect = (String) PropertiesUI.getInstance().getDefaultProps().get("SEARCH_REDIRECT");
+        boolean followRedirect = false;
+        if (redirect != null && !redirect.equals("") && Integer.parseInt(redirect) > 0) {
+            followRedirect = true;
+        }
+       Document doc = crawl(urlEncode, "", true);
+      // final Document doc = Jsoup.connect("https://google.com/search?q="+URLEncoder.encode(search, charset)).userAgent(USER_AGENT).get();
+       if (doc != null) {
 
             //Elements links = doc.body().select(".g>.r>a");
             //Elements links = doc.body().select("h3.r a"); // this is google

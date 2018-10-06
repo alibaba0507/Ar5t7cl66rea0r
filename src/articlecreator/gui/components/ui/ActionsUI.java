@@ -11,6 +11,7 @@ import articlecreator.gui.components.LinksObject;
 import articlecreator.gui.components.OpenPoject;
 import articlecreator.net.ConnectionManagerUI;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -26,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -34,6 +36,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.swing.AbstractAction;
@@ -167,51 +171,107 @@ public class ActionsUI {
     } // End CloseListener
 
     public class CleanSelectedArticles extends AbstractAction {
+
         private OpenPoject comp;
+
         public CleanSelectedArticles(OpenPoject comp) {
-            super("Clean Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/Delete24.png")));
+            super("Clean Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/Delete24.gif")));
             // new Throwable().printStackTrace();
             this.comp = comp;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            JTable tbl =  (JTable)((JPopupMenu)((JMenuItem)e.getSource()).getParent()).getInvoker();
-            int[] selectedRows = tbl.getSelectedRows();
-            ConnectionManagerUI con = new ConnectionManagerUI();
-            for (int i = 0;i < selectedRows.length;i++){
-               String keyWord =  (String)((DefaultTableModel)tbl.getModel()).getValueAt(selectedRows[i], 0);
-               String url =  (String)((DefaultTableModel)tbl.getModel()).getValueAt(selectedRows[i], 2);
-               String projDir = this.comp.getProjectDir();
-               Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
-               ArrayList links = (ArrayList) prop.get(keyWord);
-                Iterator jsonIt = links.iterator();
-                while (jsonIt.hasNext()) {
-                    LinksObject obj = (LinksObject) jsonIt.next();
-                    if (obj.equals(url) && obj.getWordCount() != null 
-                              && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/)
-                    {
-                        con.cleanFile(obj.getLocalHTMLFile());
+            
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
+                        int[] selectedRows = tbl.getSelectedRows();
+                        ConnectionManagerUI con = new ConnectionManagerUI();
+                         Cursor cursor = CleanSelectedArticles.this.comp.getParent().getCursor();
+                            CleanSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                 
+                        
+                        for (int i = 0; i < selectedRows.length; i++) {
+                            String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
+                            String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
+                            String projDir = CleanSelectedArticles.this.comp.getProjectDir();
+                            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
+                            ArrayList links = (ArrayList) prop.get(keyWord);
+                            Iterator jsonIt = links.iterator();
+                            while (jsonIt.hasNext()) {
+                                LinksObject obj = (LinksObject) jsonIt.next();
+                                if (obj.equals(url) && obj.getWordCount() != null
+                                        && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) 
+                                {
+                                    ProjectsUI.console.append(" >>>> Cleaning [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
+                                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                                    ProjectsUI.console.getCaret().setVisible(true);
+                                    con.cleanFile(obj.getLocalHTMLFile());
+                                }
+                            }
+
+                        }// end for
+                         CleanSelectedArticles.this.comp.getParent().setCursor(cursor);
                     }
-                }
-             
-            }
+                });
+
+            
+
         }
 
     }
 
     public class SpinSelectedArticles extends AbstractAction {
+
         private OpenPoject comp;
+
         public SpinSelectedArticles(OpenPoject comp) {
             super("Spin Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/articleSpin24.png")));
             // new Throwable().printStackTrace();
-           this.comp  = comp;
+            this.comp = comp;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       
+          //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
+                        int[] selectedRows = tbl.getSelectedRows();
+                        ConnectionManagerUI con = new ConnectionManagerUI();
+                         Cursor cursor = SpinSelectedArticles.this.comp.getParent().getCursor();
+                            SpinSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                 
+                        
+                        for (int i = 0; i < selectedRows.length; i++) {
+                            String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
+                            String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
+                            String projDir = SpinSelectedArticles.this.comp.getProjectDir();
+                            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
+                            ArrayList links = (ArrayList) prop.get(keyWord);
+                            Iterator jsonIt = links.iterator();
+                            while (jsonIt.hasNext()) {
+                                LinksObject obj = (LinksObject) jsonIt.next();
+                                if (obj.equals(url) && obj.getWordCount() != null
+                                        && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) 
+                                {
+                                    ProjectsUI.console.append(" >>>> Cleaning [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
+                                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                                    ProjectsUI.console.getCaret().setVisible(true);
+                                    con.spinFile(obj.getLocalHTMLFile());
+                                }
+                            }
+
+                        }// end for
+                         SpinSelectedArticles.this.comp.getParent().setCursor(cursor);
+                    }
+                });
+
         }
 
     }
@@ -733,6 +793,9 @@ public class ActionsUI {
                                 link.setWordCount("1");
                             }
                             ProjectsUI.console.append(">>>>> Parsing aricle ... [" + link.getTitle() + "] >>>>\r\n");
+                            ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length()-2);
+                            ProjectsUI.console.getCaret().setVisible(true);
+                            
                             url = new URL(link.getLink());
                         } catch (Exception io) {
                             // io.printStackTrace();
@@ -995,12 +1058,14 @@ public class ActionsUI {
         }
 
         public void actionPerformed(ActionEvent e) {
-            int i = consolesList.getSelectedIndex();
+          /*  int i = consolesList.getSelectedIndex();
             ArrayList al = (ArrayList) outputList.get(i);
             JTextArea console = (JTextArea) al.get(1);
             MyBasicTextAreaUI myUI = (MyBasicTextAreaUI) console.getUI();
             myUI.setPositions(new ArrayList()); // Clear highlighted lines 
             console.setText("");
+*/
+            ProjectsUI.console.setText("");
         }
     }
 

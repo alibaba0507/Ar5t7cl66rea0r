@@ -126,7 +126,7 @@ public class SynonymFinder {
                 randomNum = ThreadLocalRandom.current().nextInt(1, (words.length-1) + 1);
                //rand.nextInt(((words.length-1) - 1) + 1);// + (words.length-1);
                answer = words[randomNum];
-                ProjectsUI.console.append("\r\n --- Replace [" + word + "] -- [" + answer + "] ---" );
+             //   ProjectsUI.console.append("\r\n --- Replace [" + word + "] -- [" + answer + "] ---" );
                 break;
                 //  System.out.println("Number of instances of String " + count);
             }
