@@ -64,14 +64,61 @@ public class Engine {
         synonymFinder.removeSynonymForWord(word);
     }
 
-    public String update(String text,boolean alignment) throws Exception {
+    public String updateOnLine(String text) throws Exception {
         text += " ";
         int buffer = 0;
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder currentWord = new StringBuilder();
         int textLength = text.length();
-        
-        
+        String oldWord = "";
+        for (int index = 0; index < textLength; index++) {
+            char symbol = text.charAt(index);
+            if (isAlpha(symbol)) {
+                currentWord.append(symbol);
+            } else {
+                if (currentWord.length() > 0) {
+                    String toSend = currentWord.toString();
+                    currentWord.setLength(0);
+                    int length = toSend.length();
+                    LetterType firstLetterType = LetterType.LOWER;
+                    if (isUpper(toSend.charAt(0))) {
+                        firstLetterType = LetterType.UPPER;
+                    }
+                    oldWord = toSend;
+                    toSend = synonymFinder.getOnlineSearch(toSend,-1);
+                    if (toSend != null && toSend.trim().length() > 0/*&& firstLetterType == LetterType.UPPER*/) {
+                        toSend = toUpper(toSend.charAt(0)) + toSend.substring(1);
+                    }else {
+                        toSend = "N/A";
+                    }
+                    if (toSend.endsWith("|"))
+                        toSend = toSend.substring(0,toSend.length()-1);
+                    stringBuilder.append(oldWord + "{" + toSend + "}");
+                    buffer += toSend.length();
+                }
+                if (index + 1 == textLength) {
+                    continue;
+                }
+                stringBuilder.append(symbol);
+                buffer++;
+                /* if (buffer >= 45 && alignment) {
+                    stringBuilder.append("\n");
+                    buffer = 0;
+                }
+                 */
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    public String update(String text, boolean alignment) throws Exception {
+        text += " ";
+        int buffer = 0;
+        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder currentWord = new StringBuilder();
+        int textLength = text.length();
+
         for (int index = 0; index < textLength; index++) {
             char symbol = text.charAt(index);
             if (isAlpha(symbol)) {

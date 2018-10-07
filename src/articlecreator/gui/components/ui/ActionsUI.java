@@ -9,9 +9,12 @@ import articlecreator.gui.MyBasicTextAreaUI;
 import articlecreator.gui.MyInternalFrame;
 import articlecreator.gui.components.LinksObject;
 import articlecreator.gui.components.OpenPoject;
+import articlecreator.gui.run.ArticleManagmentMain;
 import articlecreator.net.ConnectionManagerUI;
+import articlecreator.net.MailService;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -69,6 +72,7 @@ import javax.swing.text.JTextComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.jsoup.nodes.Document;
 import sun.security.ssl.SSLSocketImpl;
 import za.co.utils.AWTUtils;
 
@@ -182,44 +186,131 @@ public class ActionsUI {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            
-                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
-                        int[] selectedRows = tbl.getSelectedRows();
-                        ConnectionManagerUI con = new ConnectionManagerUI();
-                         Cursor cursor = CleanSelectedArticles.this.comp.getParent().getCursor();
-                            CleanSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                 
-                        
-                        for (int i = 0; i < selectedRows.length; i++) {
-                            String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
-                            String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
-                            String projDir = CleanSelectedArticles.this.comp.getProjectDir();
-                            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
-                            ArrayList links = (ArrayList) prop.get(keyWord);
-                            Iterator jsonIt = links.iterator();
-                            while (jsonIt.hasNext()) {
-                                LinksObject obj = (LinksObject) jsonIt.next();
-                                if (obj.equals(url) && obj.getWordCount() != null
-                                        && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) 
-                                {
-                                    ProjectsUI.console.append(" >>>> Cleaning [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
-                                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
-                                    ProjectsUI.console.getCaret().setVisible(true);
-                                    con.cleanFile(obj.getLocalHTMLFile());
-                                }
+
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
+                    int[] selectedRows = tbl.getSelectedRows();
+                    ConnectionManagerUI con = new ConnectionManagerUI();
+                    Cursor cursor = CleanSelectedArticles.this.comp.getParent().getCursor();
+                    CleanSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    for (int i = 0; i < selectedRows.length; i++) {
+                        String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
+                        String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
+                        String projDir = CleanSelectedArticles.this.comp.getProjectDir();
+                        Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
+                        ArrayList links = (ArrayList) prop.get(keyWord);
+                        Iterator jsonIt = links.iterator();
+                        while (jsonIt.hasNext()) {
+                            LinksObject obj = (LinksObject) jsonIt.next();
+                            if (obj.equals(url) && obj.getWordCount() != null
+                                    && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) {
+                                ProjectsUI.console.append(" >>>> Cleaning [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
+                                ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                                ProjectsUI.console.getCaret().setVisible(true);
+                                con.cleanFile(obj.getLocalHTMLFile());
                             }
+                        }
 
-                        }// end for
-                         CleanSelectedArticles.this.comp.getParent().setCursor(cursor);
-                    }
-                });
+                    }// end for
+                    CleanSelectedArticles.this.comp.getParent().setCursor(cursor);
+                }
+            });
 
-            
+        }
 
+    }
+
+    public void spinArticle(final String articlePath, final OpenPoject comp) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Cursor cursor = comp.getParent().getCursor();
+                comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                ConnectionManagerUI con = new ConnectionManagerUI();
+                ProjectsUI.console.append(" >>>> Spining [" + articlePath + "] >>>>\r\n");
+                ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                ProjectsUI.console.getCaret().setVisible(true);
+                con.spinFile(articlePath);
+                comp.getParent().setCursor(cursor);
+            }
+        });
+    }
+
+    public class EmailSelectedArticles extends AbstractAction {
+
+        private OpenPoject comp;
+
+        public EmailSelectedArticles(OpenPoject comp) {
+            super("Email Articles", new ImageIcon(AWTUtils.getIcon(null, "/images/mail.png")));
+            this.comp = comp;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JList emailList = new JList();
+            emailList.setModel(new DefaultListModel());
+            ArrayList blogEmails = (ArrayList) PropertiesUI.getInstance().getDefaultProps().get("BLOGGER_MAILS");
+
+            JScrollPane scrollPane = new JScrollPane(emailList);
+            scrollPane.setPreferredSize(new Dimension(250, 200));
+            if (blogEmails != null) {
+                Iterator it = blogEmails.iterator();
+                while (it.hasNext()) {
+                    ((DefaultListModel) emailList.getModel()).addElement(it.next());
+                }
+                int result = JOptionPane.showConfirmDialog(null, scrollPane, "Select Emails", JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    int[] indx = emailList.getSelectedIndices();
+                    ArrayList emails = new ArrayList();
+                    for (int i = 0; i < indx.length; i++) {
+                        emails.add(((DefaultListModel) emailList.getModel()).getElementAt(i));
+                        //  System.out.println("You entered "
+                        //                        +  ((DefaultListModel)emailList.getModel()).getElementAt(i));      
+                    }// end for
+                    sendEmails(emails);
+                } else {
+                    System.out.println("User canceled / closed the dialog, result = " + result);
+                }
+            } else {
+                JOptionPane.showMessageDialog(comp, "Blogger Email List is Empty ...");
+            }
+            /*   JPasswordField password = new JPasswordField();
+            final JComponent[] inputs = new JComponent[]{
+                new JLabel("First"),
+                firstName,
+                new JLabel("Last"),
+                lastName,
+                new JLabel("Password"),
+                password
+            };
+             */
+
+        }
+
+        private void sendEmails(ArrayList blogEmails) {
+            int[] indx = this.comp.getArticleTable().getSelectedRows();
+            ConnectionManagerUI con = new ConnectionManagerUI();
+            String[] bEmails = new String[blogEmails.size()];
+            for (int i = 0; i < blogEmails.size(); i++) {
+                bEmails[i] = (String) blogEmails.get(i);
+            }
+            for (int i = 0; i < indx.length; i++) {
+                LinksObject l = this.comp.getObjectFromTableIndex(indx[i]);
+                File f = new File(l.getLocalHTMLFile());
+                String fileToSend = f.getParent()+ ArticleManagmentMain.FILE_SEPARATOR
+                        + "spin" + ArticleManagmentMain.FILE_SEPARATOR
+                        + f.getName();
+                Document doc = con.openFile(fileToSend);
+                if (doc != null) {
+                    MailService mail = new MailService();
+                    mail.constractMessade(bEmails, "Publish from ArticleCreator", doc.toString());
+                }
+            }
         }
 
     }
@@ -236,41 +327,40 @@ public class ActionsUI {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-       
-          //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
-                        int[] selectedRows = tbl.getSelectedRows();
-                        ConnectionManagerUI con = new ConnectionManagerUI();
-                         Cursor cursor = SpinSelectedArticles.this.comp.getParent().getCursor();
-                            SpinSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                 
-                        
-                        for (int i = 0; i < selectedRows.length; i++) {
-                            String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
-                            String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
-                            String projDir = SpinSelectedArticles.this.comp.getProjectDir();
-                            Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
-                            ArrayList links = (ArrayList) prop.get(keyWord);
-                            Iterator jsonIt = links.iterator();
-                            while (jsonIt.hasNext()) {
-                                LinksObject obj = (LinksObject) jsonIt.next();
-                                if (obj.equals(url) && obj.getWordCount() != null
-                                        && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) 
-                                {
-                                    ProjectsUI.console.append(" >>>> Cleaning [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
-                                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
-                                    ProjectsUI.console.getCaret().setVisible(true);
-                                    con.spinFile(obj.getLocalHTMLFile());
-                                }
-                            }
 
-                        }// end for
-                         SpinSelectedArticles.this.comp.getParent().setCursor(cursor);
-                    }
-                });
+            //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JTable tbl = (JTable) ((JPopupMenu) ((JMenuItem) e.getSource()).getParent()).getInvoker();
+                    int[] selectedRows = tbl.getSelectedRows();
+                    ConnectionManagerUI con = new ConnectionManagerUI();
+                    Cursor cursor = SpinSelectedArticles.this.comp.getParent().getCursor();
+                    SpinSelectedArticles.this.comp.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    for (int i = 0; i < selectedRows.length; i++) {
+                        String keyWord = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 0);
+                        String url = (String) ((DefaultTableModel) tbl.getModel()).getValueAt(selectedRows[i], 2);
+                        String projDir = SpinSelectedArticles.this.comp.getProjectDir();
+                        Hashtable prop = PropertiesUI.getInstance().initProjectProperties(projDir);//editor.initProjectProperties((String) p.get("dir" ));
+                        ArrayList links = (ArrayList) prop.get(keyWord);
+                        Iterator jsonIt = links.iterator();
+                        while (jsonIt.hasNext()) {
+                            LinksObject obj = (LinksObject) jsonIt.next();
+                            if (obj.equals(url) && obj.getWordCount() != null
+                                    && Integer.parseInt(obj.getWordCount()) > 40/* Has some words to check*/) {
+                                ProjectsUI.console.append(" >>>> Spining [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
+                                ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                                ProjectsUI.console.getCaret().setVisible(true);
+                                con.spinFile(obj.getLocalHTMLFile());
+                                //spinArticle(obj.getLocalHTMLFile(), SpinSelectedArticles.this.comp);
+                            }
+                        }
+
+                    }// end for
+                    SpinSelectedArticles.this.comp.getParent().setCursor(cursor);
+                }
+            });
 
         }
 
@@ -340,8 +430,9 @@ public class ActionsUI {
 
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
-            JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
-            //openFile(null);
+            // JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
+
+            System.exit(0);//openFile(null);
 
         }
     } // End NewAction
@@ -793,9 +884,9 @@ public class ActionsUI {
                                 link.setWordCount("1");
                             }
                             ProjectsUI.console.append(">>>>> Parsing aricle ... [" + link.getTitle() + "] >>>>\r\n");
-                            ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length()-2);
+                            ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
                             ProjectsUI.console.getCaret().setVisible(true);
-                            
+
                             url = new URL(link.getLink());
                         } catch (Exception io) {
                             // io.printStackTrace();
@@ -1058,13 +1149,13 @@ public class ActionsUI {
         }
 
         public void actionPerformed(ActionEvent e) {
-          /*  int i = consolesList.getSelectedIndex();
+            /*  int i = consolesList.getSelectedIndex();
             ArrayList al = (ArrayList) outputList.get(i);
             JTextArea console = (JTextArea) al.get(1);
             MyBasicTextAreaUI myUI = (MyBasicTextAreaUI) console.getUI();
             myUI.setPositions(new ArrayList()); // Clear highlighted lines 
             console.setText("");
-*/
+             */
             ProjectsUI.console.setText("");
         }
     }

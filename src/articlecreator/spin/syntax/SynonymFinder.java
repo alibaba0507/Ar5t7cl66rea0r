@@ -134,8 +134,8 @@ public class SynonymFinder {
         return answer;
     }
 
-    private String getOnlineSearch(String word, int answerPriority) throws Exception {
-        String answer = null;
+    public String getOnlineSearch(String word, int answerPriority) throws Exception {
+        String answer = "";
         HTTPConnection httpConnection = new HTTPConnection(REQUEST_URL + "word=" + word + "&language=en_US&key=" + MY_API_KEY + "&output=json"); // make request to get some synonyms
         ArrayList<String> result = httpConnection.makeRequest();
         JSONParser parser = new JSONParser();
@@ -197,11 +197,17 @@ public class SynonymFinder {
                                     continue;
                                 }
                                 int myPriority = hashMapOfFrequency.getPriority(sss);
-                                if (myPriority != -1) {
+                                if (myPriority != -1 && answerPriority != -1) {
                                     if (myPriority < answerPriority) {
                                         answer = sss;
                                         answerPriority = myPriority;
                                     }
+                                }else
+                                {
+                                    if (!answer.endsWith("|"+ sss) && 
+                                           !answer.startsWith(sss) 
+                                            && !answer.contains("|" + sss + "|"))
+                                    answer += sss + "|";
                                 }
                             }
                         }

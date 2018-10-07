@@ -12,6 +12,7 @@ import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.run.ArticleManagmentMain;
 import articlecreator.net.ConnectionManagerUI;
+import articlecreator.spin.syntax.Engine;
 import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -30,17 +31,25 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import javax.swing.text.Position;
+import javax.swing.text.Segment;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.Element;
@@ -65,6 +74,7 @@ public class OpenPoject extends javax.swing.JPanel {
     private JPopupMenu popupArticleList;
     private String objectDir;
     private String originalFile, spinFile;
+    private DocumentListener txtWeblistener, txtSpinListener;
 
     /**
      * Creates new form OpenPoject
@@ -86,6 +96,7 @@ public class OpenPoject extends javax.swing.JPanel {
         setLayout(new FlowLayout());
 
         initComponents();
+        initEditors();
         jPanel1.setPreferredSize(new Dimension(400, 450));
         jPanel2.setPreferredSize(new Dimension(400, 450));
         //jPanel3.setPreferredSize(new Dimension(400, 450));
@@ -108,21 +119,7 @@ public class OpenPoject extends javax.swing.JPanel {
         };
         jTable1.setModel(tblModel);
         parseSelectedObject();
-        String type = ("text/html");
-        final EditorKit kit = txtWebView.getEditorKitForContentType(type);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                txtWebView.setEditorKit(kit);
-                javax.swing.text.Document d = kit.createDefaultDocument();
-                //  d.addDocumentListener();
-                txtWebView.setDocument(d);
-
-                txtSpin.setEditorKit(kit);
-                javax.swing.text.Document d1 = kit.createDefaultDocument();
-                txtSpin.setDocument(d1);
-            }
-        });
         popupList = new JPopupMenu();
         JMenuItem menuItem = new JMenuItem();
 
@@ -151,6 +148,10 @@ public class OpenPoject extends javax.swing.JPanel {
         final JMenuItem menuItemArticles1 = new JMenuItem();
         menuItemArticles1.setAction(new ActionsUI().new SpinSelectedArticles(this));
         popupArticleList.add(menuItemArticles1);
+
+        final JMenuItem menuItemArticles2 = new JMenuItem();
+        menuItemArticles2.setAction(new ActionsUI().new EmailSelectedArticles(this));
+        popupArticleList.add(menuItemArticles2);
         // jSplitPane1.setOneTouchExpandable(true);
         // jSplitPane1.setMinimumSize(new Dimension(1, 1));
         btnSaveArticle.setEnabled(false);
@@ -268,8 +269,11 @@ public class OpenPoject extends javax.swing.JPanel {
                                             + f.getName();
                                     Document doc = new ConnectionManagerUI().openFile(fileToOpen);
                                     /// Document docSpin = new ConnectionManagerUI().spinFile(obj.getLocalHTMLFile());
-                                    txtSpin.setText("");
-                                    txtWebView.setText("");
+                                    //    initEditors();
+                                    // txtSpin.setText("");
+                                    //txtWebView.setText("");
+                                    // txtWebView.getDocument().re
+                                    initEditors();
                                     if (doc != null) {
                                         OpenPoject.this.originalFile = fileToOpen;
                                         txtWebView.setText(doc.outerHtml());
@@ -278,22 +282,7 @@ public class OpenPoject extends javax.swing.JPanel {
                                         txtWebView.getCaret().setSelectionVisible(true);
                                         // this will move scroll to the top for JEDitor
                                         jScrollPane3.getVerticalScrollBar().setValue(0);
-                                        txtWebView.getDocument().addDocumentListener(new DocumentListener() {
-                                            @Override
-                                            public void insertUpdate(DocumentEvent e) {
-                                                btnSaveArticle.setEnabled(true);
-                                            }
-
-                                            @Override
-                                            public void removeUpdate(DocumentEvent e) {
-                                                btnSaveArticle.setEnabled(true);
-                                            }
-
-                                            @Override
-                                            public void changedUpdate(DocumentEvent e) {
-                                                btnSaveArticle.setEnabled(true);
-                                            }
-                                        });
+                                        txtWebView.getDocument().addDocumentListener(txtWeblistener);
                                     }
                                     if (new File(spinFile).exists()) {
                                         doc = new ConnectionManagerUI().openFile(spinFile);
@@ -305,22 +294,7 @@ public class OpenPoject extends javax.swing.JPanel {
                                             txtSpin.getCaret().setSelectionVisible(true);
                                             // this will move scroll to the top for JEDitor
                                             scrollSpin.getVerticalScrollBar().setValue(0);
-                                            txtSpin.getDocument().addDocumentListener(new DocumentListener() {
-                                                @Override
-                                                public void insertUpdate(DocumentEvent e) {
-                                                    btnSaveSpin.setEnabled(true);
-                                                }
-
-                                                @Override
-                                                public void removeUpdate(DocumentEvent e) {
-                                                    btnSaveSpin.setEnabled(true);
-                                                }
-
-                                                @Override
-                                                public void changedUpdate(DocumentEvent e) {
-                                                    btnSaveSpin.setEnabled(true);
-                                                }
-                                            });
+                                            txtSpin.getDocument().addDocumentListener(txtSpinListener);
 
                                             //  jSplitPane1.setDividerLocation(0.5d);
                                         }
@@ -363,6 +337,67 @@ public class OpenPoject extends javax.swing.JPanel {
     }
 
     /**
+     *
+     */
+    private void initEditors() {
+        if (txtWeblistener != null) {
+            txtWebView.getDocument().removeDocumentListener(txtWeblistener);
+        }
+
+        if (txtSpinListener != null) {
+            txtSpin.getDocument().removeDocumentListener(txtSpinListener);
+        }
+        txtWeblistener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                btnSaveArticle.setEnabled(true);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                btnSaveArticle.setEnabled(true);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                btnSaveArticle.setEnabled(true);
+            }
+        };
+        txtSpinListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                btnSaveSpin.setEnabled(true);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                btnSaveSpin.setEnabled(true);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                btnSaveSpin.setEnabled(true);
+            }
+        };
+        String type = ("text/html");
+        final EditorKit kit = txtWebView.getEditorKitForContentType(type);
+
+        //  SwingUtilities.invokeLater(new Runnable() {
+        //    public void run() {
+        txtWebView.setEditorKit(kit);
+        javax.swing.text.Document d = kit.createDefaultDocument();
+        //  d.addDocumentListener();
+        txtWebView.setDocument(d);
+        // txtWebView.getDocument().addDocumentListener(txtWeblistener);
+        txtSpin.setEditorKit(kit);
+        javax.swing.text.Document d1 = kit.createDefaultDocument();
+        txtSpin.setDocument(d1);
+        //  txtSpin.getDocument().addDocumentListener(txtSpinListener);
+        //  }
+        //});
+    }
+
+    /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
@@ -389,17 +424,20 @@ public class OpenPoject extends javax.swing.JPanel {
         jTable1 = new javax.swing.JTable();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel4 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        btnSaveArticle = new javax.swing.JButton();
+        btnSpin = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         txtWebView = new javax.swing.JEditorPane();
-        jPanel5 = new javax.swing.JPanel();
-        btnSaveArticle = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
-        scrollSpin = new javax.swing.JScrollPane();
-        txtSpin = new javax.swing.JEditorPane();
         jPanel6 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         btnSaveSpin = new javax.swing.JButton();
+        btnSpin1 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        scrollSpin = new javax.swing.JScrollPane();
+        txtSpin = new javax.swing.JEditorPane();
 
         jLabel4.setText("Or comma separated");
 
@@ -451,7 +489,7 @@ public class OpenPoject extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(159, 159, 159)
                 .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(481, Short.MAX_VALUE))
+                .addContainerGap(859, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -530,84 +568,79 @@ public class OpenPoject extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.BorderLayout());
 
-        txtWebView.setMaximumSize(new java.awt.Dimension(550, 550));
-        jScrollPane3.setViewportView(txtWebView);
+        jPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel4.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel6.setText(" Original Article ");
+        jPanel3.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 119, -1));
 
+        btnSaveArticle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Save24.gif"))); // NOI18N
         btnSaveArticle.setText("Save Article");
         btnSaveArticle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveArticleActionPerformed(evt);
             }
         });
+        jPanel3.add(btnSaveArticle, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 0, -1, -1));
 
-        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel6.setText(" Original Article ");
+        btnSpin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/articleSpin24.png"))); // NOI18N
+        btnSpin.setText("Spin Again");
+        btnSpin.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSpinActionPerformed(evt);
+            }
+        });
+        jPanel3.add(btnSpin, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 0, -1, -1));
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnSaveArticle)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 463, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSaveArticle)
-                .addContainerGap(47, Short.MAX_VALUE))
-        );
+        jPanel4.add(jPanel3, java.awt.BorderLayout.PAGE_START);
 
-        jPanel4.add(jPanel5, java.awt.BorderLayout.PAGE_START);
+        txtWebView.setMaximumSize(new java.awt.Dimension(550, 550));
+        jScrollPane3.setViewportView(txtWebView);
+
+        jPanel4.add(jScrollPane3, java.awt.BorderLayout.CENTER);
 
         jTabbedPane2.addTab("Original", jPanel4);
 
         jPanel8.setLayout(new java.awt.BorderLayout());
 
-        scrollSpin.setViewportView(txtSpin);
-
-        jPanel8.add(scrollSpin, java.awt.BorderLayout.CENTER);
+        jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel8.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel8.setText(" Spin Article ");
+        jPanel6.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 100, -1));
 
+        btnSaveSpin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/SaveAs24.gif"))); // NOI18N
         btnSaveSpin.setText("Save Spin");
         btnSaveSpin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveSpinActionPerformed(evt);
             }
         });
+        jPanel6.add(btnSaveSpin, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 0, -1, -1));
 
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnSaveSpin)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 463, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel8)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnSaveSpin)
-                .addContainerGap(47, Short.MAX_VALUE))
-        );
+        btnSpin1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/articleSpin24.png"))); // NOI18N
+        btnSpin1.setText("Spin Again");
+        btnSpin1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSpin1ActionPerformed(evt);
+            }
+        });
+        jPanel6.add(btnSpin1, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 0, -1, -1));
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Find24.gif"))); // NOI18N
+        jButton1.setText("Check Selected Text OnLine");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel6.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 0, -1, 30));
 
         jPanel8.add(jPanel6, java.awt.BorderLayout.PAGE_START);
+
+        scrollSpin.setViewportView(txtSpin);
+
+        jPanel8.add(scrollSpin, java.awt.BorderLayout.CENTER);
 
         jTabbedPane2.addTab("Spin", jPanel8);
 
@@ -632,7 +665,9 @@ public class OpenPoject extends javax.swing.JPanel {
     }//GEN-LAST:event_btnSaveArticleActionPerformed
 
     private void btnImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportActionPerformed
-        while (true) { // To keep chooser open if open a directory, then press open button
+        AbstractAction a = new ActionsUI().new RunProjectAction();
+        a.actionPerformed(new ActionEvent(this, 1, "Run"));
+        /* while (true) { // To keep chooser open if open a directory, then press open button
 
             chooser = new FileChooserUI().createFileChooser(FileChooserUI.FILE_ONLY);
             chooser.setAcceptAllFileFilterUsed(true);
@@ -648,7 +683,7 @@ public class OpenPoject extends javax.swing.JPanel {
                 //txtProjectDirectory.setText(file.getAbsolutePath());
                 break;
             }
-        }
+        }*/
     }//GEN-LAST:event_btnImportActionPerformed
 
     private void btnProjectSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectSaveActionPerformed
@@ -679,6 +714,67 @@ public class OpenPoject extends javax.swing.JPanel {
     private void btnSaveSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveSpinActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSaveSpinActionPerformed
+
+    private void btnSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpinActionPerformed
+        if (this.originalFile == null || this.originalFile.equals("")) {
+            return;
+        }
+        File f = new File(this.originalFile);
+        if (!f.exists()) {
+            return; // nothing to do here
+        }
+        new ActionsUI().spinArticle(this.originalFile, this);
+        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
+        txtSpin.setText(doc.outerHtml());
+        txtSpin.setCaretPosition(0);
+        txtSpin.getCaret().setSelectionVisible(true);
+
+    }//GEN-LAST:event_btnSpinActionPerformed
+
+    private void btnSpin1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpin1ActionPerformed
+        if (this.spinFile == null || this.spinFile.equals("")) {
+            return;
+        }
+        File f = new File(this.spinFile);
+        if (!f.exists()) {
+            return; // nothing to do here
+        }
+        new ActionsUI().spinArticle(this.spinFile, this);
+        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
+        txtSpin.setText(doc.outerHtml());
+        txtSpin.setCaretPosition(0);
+        txtSpin.getCaret().setSelectionVisible(true);
+    }//GEN-LAST:event_btnSpin1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        final String selectedText = txtSpin.getSelectedText();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Cursor cursor = OpenPoject.this.getParent().getCursor();
+                    OpenPoject.this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    String onlineAnswer = new Engine().updateOnLine(selectedText);
+                    ProjectsUI.console.append("\r\n ============================= Synonims =========================\r\n");
+                    ProjectsUI.console.append(selectedText + "\r\n");
+                    ProjectsUI.console.append("\r\n ============================= ONLINE Synonims =========================\r\n");
+                    String[] words = onlineAnswer.split(" ");
+                    for (int i = 0; i < words.length; i++) {
+                        ProjectsUI.console.append(words[i] + "\r\n");
+                    }
+                    ProjectsUI.console.append("\r\n ============================= END Synonims =========================\r\n");
+                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                    ProjectsUI.console.getCaret().setVisible(true);
+                    OpenPoject.this.getParent().setCursor(cursor);
+                    JOptionPane.showMessageDialog(txtSpin.getParent().getParent(), "Please Check Console");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     public void save() {
         String projName, keyWords, dir;
@@ -746,6 +842,30 @@ public class OpenPoject extends javax.swing.JPanel {
 
     public String getProjectDir() {
         return this.objectDir;
+    }
+
+    public JTable getArticleTable() {
+        return this.jTable1;
+    }
+
+    public LinksObject getObjectFromTableIndex(int index) {
+        LinksObject link = null;
+        Hashtable prop = PropertiesUI.getInstance().initProjectProperties(this.objectDir);//editor.initProjectProperties((String) p.get("dir" ));
+        String url = (String) ((DefaultTableModel) jTable1.getModel()).getValueAt(index, 2);
+        String keyWord = (String) ((DefaultTableModel) jTable1.getModel()).getValueAt(index, 0);
+        ArrayList links = (ArrayList) prop.get(keyWord);
+
+        Iterator jsonIt = links.iterator();
+        while (jsonIt.hasNext()) {
+            LinksObject obj = (LinksObject) jsonIt.next();
+            if (obj.equals(url))
+            {
+                link = obj;
+                break;
+            }    
+        }
+
+        return link;
     }
 
     public void refreshLinksTable() {
@@ -854,6 +974,9 @@ public class OpenPoject extends javax.swing.JPanel {
     private javax.swing.JButton btnProjectSave;
     private javax.swing.JButton btnSaveArticle;
     private javax.swing.JButton btnSaveSpin;
+    private javax.swing.JButton btnSpin;
+    private javax.swing.JButton btnSpin1;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -863,8 +986,8 @@ public class OpenPoject extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;

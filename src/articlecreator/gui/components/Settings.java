@@ -7,10 +7,14 @@ package articlecreator.gui.components;
 
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
+import articlecreator.gui.run.ArticleManagmentMain;
+import com.sun.org.apache.xml.internal.security.algorithms.MessageDigestAlgorithm;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.DefaultListModel;
@@ -37,7 +41,7 @@ public class Settings extends javax.swing.JDialog {
     public Settings(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-       // cboParseType.setSelectedIndex(1);
+        // cboParseType.setSelectedIndex(1);
         //cboParseType.setSelectedIndex(0);
         Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
         ArrayList list = (ArrayList) prop.get("USER_SEARCH");
@@ -58,7 +62,7 @@ public class Settings extends javax.swing.JDialog {
         menuItem = new JMenuItem();
         menuItem.setAction(new ActionsUI().new AddIDAction());
         popupText.add(menuItem);
-       // menuItem = new JMenuItem();
+        // menuItem = new JMenuItem();
         JMenu m = new JMenu();
         m.setText("Add TAG");
         m.setIcon(new ImageIcon(AWTUtils.getIcon(null, "/images/tag24.png")));
@@ -67,61 +71,73 @@ public class Settings extends javax.swing.JDialog {
         JMenuItem subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddH1Action());
         m.add(subMenu);
-        
+
         subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddH2Action());
         m.add(subMenu);
-        
-          subMenu = new JMenuItem();
+
+        subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddSpanAction());
         m.add(subMenu);
-        
-        
-          subMenu = new JMenuItem();
+
+        subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddDIVAction());
         m.add(subMenu);
-        
-        
-          subMenu = new JMenuItem();
+
+        subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddMAINAction());
         m.add(subMenu);
-        
-        
-          subMenu = new JMenuItem();
+
+        subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddSECTIONction());
         m.add(subMenu);
-        
-        
-          subMenu = new JMenuItem();
+
+        subMenu = new JMenuItem();
         subMenu.setAction(new ActionsUI().new AddARTICELction());
         m.add(subMenu);
-       //  Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
-      //  String type = (String) cboParseType.getSelectedItem();
+        //  Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
+        //  String type = (String) cboParseType.getSelectedItem();
         ArrayList listParser = (ArrayList) prop.get("USER_PARSER");
-        if (listParser != null)
-        {
+        if (listParser != null) {
             Iterator lIt = listParser.iterator();
-            while(lIt.hasNext())
-            {
-                ((DefaultListModel)lstSaveHtmlTags.getModel()).addElement(lIt.next());
+            while (lIt.hasNext()) {
+                ((DefaultListModel) lstSaveHtmlTags.getModel()).addElement(lIt.next());
             }
         }
-        
+        String gmail = (String) PropertiesUI.getInstance().getDefaultProps().get("USER_GMAIL");
+        if (gmail != null) {
+            txtGmailAddress.setText(gmail);
+        }
         String redirect = (String) PropertiesUI.getInstance().getDefaultProps().get("SEARCH_REDIRECT");
         //boolean followRedirect = false;
         btnRedirect.setSelected(false);
         if (redirect != null && !redirect.equals("") && Integer.parseInt(redirect) > 0) {
-           btnRedirect.setSelected(true);
+            btnRedirect.setSelected(true);
             //followRedirect = true;
+        }
+        
+        ArrayList blogEmails = (ArrayList)PropertiesUI.getInstance().getDefaultProps().get("BLOGGER_MAILS");
+        if (blogEmails != null)
+        { 
+             DefaultListModel bloggerModel = (DefaultListModel)lstBloggerEmails.getModel();
+             bloggerModel.clear();
+            Iterator it = blogEmails.iterator();
+            while(it.hasNext())
+            {
+                String email = (String)it.next();
+                bloggerModel.addElement(email);
+            }
         }
         btnRedirect.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JRadioButton radioButton = (JRadioButton) e.getSource();
                 if (radioButton.isSelected()) {
-                     PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT","1");
-                }else
-                    PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT","0");
+                    PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT", "1");
+                } else {
+                    PropertiesUI.getInstance().getDefaultProps().put("SEARCH_REDIRECT", "0");
+                }
+                PropertiesUI.getInstance().saveProperties();
 
             }
         });
@@ -155,10 +171,27 @@ public class Settings extends javax.swing.JDialog {
         lstSaveHtmlTags = new javax.swing.JList();
         btnAddToTags = new javax.swing.JButton();
         btnDelTags = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        txtGmailAddress = new javax.swing.JTextField();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        lstBloggerEmails = new javax.swing.JList<>();
+        jLabel5 = new javax.swing.JLabel();
+        txtBloggerEmil = new javax.swing.JTextField();
+        btnAddBlogEmail = new javax.swing.JButton();
+        btnRemoveBlogEmail = new javax.swing.JButton();
+        jLabel7 = new javax.swing.JLabel();
+        txtPassword = new javax.swing.JPasswordField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Search URL");
+
+        txtSearchURL.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtSearchURLFocusLost(evt);
+            }
+        });
 
         lstSavedSearchEngines.setModel(new DefaultListModel<String>()
         );
@@ -214,14 +247,12 @@ public class Settings extends javax.swing.JDialog {
                                 .addGap(33, 33, 33))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addGap(26, 26, 26)
-                                .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(23, 23, 23)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtSearchURL, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSearchSyntax, javax.swing.GroupLayout.PREFERRED_SIZE, 283, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
@@ -247,7 +278,7 @@ public class Settings extends javax.swing.JDialog {
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("tab1", jPanel1);
+        jTabbedPane1.addTab("Search Engine", jPanel1);
 
         jLabel4.setText("HTML Tag to Parse");
 
@@ -320,7 +351,100 @@ public class Settings extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("tab2", jPanel2);
+        jTabbedPane1.addTab("TagsParser", jPanel2);
+
+        jLabel3.setText("GMail address");
+
+        txtGmailAddress.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtGmailAddressFocusLost(evt);
+            }
+        });
+        txtGmailAddress.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtGmailAddressActionPerformed(evt);
+            }
+        });
+
+        lstBloggerEmails.setModel(new DefaultListModel());
+        jScrollPane3.setViewportView(lstBloggerEmails);
+
+        jLabel5.setText("Email for Blogger Blog");
+
+        btnAddBlogEmail.setText("Add");
+        btnAddBlogEmail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddBlogEmailActionPerformed(evt);
+            }
+        });
+
+        btnRemoveBlogEmail.setText("REmove");
+        btnRemoveBlogEmail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveBlogEmailActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("GMail password");
+
+        txtPassword.setText("jPasswordField1");
+        txtPassword.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtPasswordFocusLost(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnRemoveBlogEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnAddBlogEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtGmailAddress)
+                            .addComponent(txtBloggerEmil)
+                            .addComponent(txtPassword))))
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(txtGmailAddress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(txtBloggerEmil, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(btnAddBlogEmail)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRemoveBlogEmail))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Emails", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -363,7 +487,7 @@ public class Settings extends javax.swing.JDialog {
 
     private void btnDelTagsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDelTagsActionPerformed
         Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
-      //  String type = (String) cboParseType.getSelectedItem();
+        //  String type = (String) cboParseType.getSelectedItem();
         ArrayList list = (ArrayList) prop.get("USER_PARSER");
         String value = (String) ((JList) lstSaveHtmlTags).getSelectedValue();
         ((DefaultListModel) ((JList) lstSaveHtmlTags).getModel()).removeElement(value);
@@ -375,7 +499,7 @@ public class Settings extends javax.swing.JDialog {
 
         Hashtable prop = PropertiesUI.getInstance().getDefaultProps();
         if (!txtHtmlTagName.getText().isEmpty()) {
-           // String type = (String) cboParseType.getSelectedItem();
+            // String type = (String) cboParseType.getSelectedItem();
             ArrayList list = (ArrayList) prop.get("USER_PARSER");
             if (list == null) {
                 list = new ArrayList();
@@ -435,6 +559,70 @@ public class Settings extends javax.swing.JDialog {
     private void btnRedirectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRedirectActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnRedirectActionPerformed
+
+    private void btnAddBlogEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddBlogEmailActionPerformed
+        
+         if (!txtBloggerEmil.getText().equals("")) {
+            if (!txtBloggerEmil.getText().matches(ArticleManagmentMain.EMAIL_PATTERN)) {
+                JOptionPane.showMessageDialog(this, "Invalid Blogger Email ...", "Email Validation", JOptionPane.WARNING_MESSAGE);
+            } else {
+                  ArrayList blogEmails = (ArrayList)PropertiesUI.getInstance().getDefaultProps().get("BLOGGER_MAILS");
+                  if (blogEmails == null)
+                  {    
+                      blogEmails = new ArrayList();
+                  }
+                  blogEmails.add(txtBloggerEmil.getText());
+                  PropertiesUI.getInstance().getDefaultProps().put("BLOGGER_MAILS", blogEmails);
+                 PropertiesUI.getInstance().saveProperties();
+                ((DefaultListModel)lstBloggerEmails.getModel()).addElement(txtBloggerEmil.getText());
+            }
+        }
+    }//GEN-LAST:event_btnAddBlogEmailActionPerformed
+
+    private void btnRemoveBlogEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveBlogEmailActionPerformed
+            ArrayList blogEmails = (ArrayList)PropertiesUI.getInstance().getDefaultProps().get("BLOGGER_MAILS");
+             if (blogEmails == null)
+                 return;
+            DefaultListModel l = (DefaultListModel)lstBloggerEmails.getModel();
+            int[] indx = lstBloggerEmails.getSelectedIndices();
+            for (int i = 0;i < indx.length;i++)
+            {
+              blogEmails.remove(l.get(i));
+              l.removeElement(l.get(i));
+            }
+            if (indx.length > 0)
+                 PropertiesUI.getInstance().saveProperties();
+           
+    }//GEN-LAST:event_btnRemoveBlogEmailActionPerformed
+
+    private void txtGmailAddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGmailAddressActionPerformed
+
+    }//GEN-LAST:event_txtGmailAddressActionPerformed
+
+    private void txtSearchURLFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSearchURLFocusLost
+
+
+    }//GEN-LAST:event_txtSearchURLFocusLost
+
+    private void txtGmailAddressFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtGmailAddressFocusLost
+        if (!txtGmailAddress.getText().equals("")) {
+            if (!txtGmailAddress.getText().matches(ArticleManagmentMain.EMAIL_PATTERN)) {
+                JOptionPane.showMessageDialog(this, "Invalid Email ...", "Email Validation", JOptionPane.WARNING_MESSAGE);
+            } else {
+                PropertiesUI.getInstance().getDefaultProps().put("USER_GMAIL", txtGmailAddress.getText());
+                PropertiesUI.getInstance().saveProperties();
+            }
+        }
+    }//GEN-LAST:event_txtGmailAddressFocusLost
+
+    private void txtPasswordFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtPasswordFocusLost
+        String pswd =  new String(txtPassword.getPassword());
+        if (!pswd.equals("")) {
+                String encrPassw =  ArticleManagmentMain.encrypt(pswd);
+                PropertiesUI.getInstance().getDefaultProps().put("USER_GMAIL_PSWD", encrPassw);
+                PropertiesUI.getInstance().saveProperties();
+        }
+    }//GEN-LAST:event_txtPasswordFocusLost
     private void ShowPopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
             popupText.show(e.getComponent(), e.getX(), e.getY());
@@ -484,23 +672,34 @@ public class Settings extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAddBlogEmail;
     private javax.swing.JButton btnAddToSearch;
     private javax.swing.JButton btnAddToTags;
     private javax.swing.JButton btnDelSearch;
     private javax.swing.JButton btnDelTags;
     private javax.swing.JRadioButton btnRedirect;
+    private javax.swing.JButton btnRemoveBlogEmail;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JList<String> lstBloggerEmails;
     private javax.swing.JList<String> lstSaveHtmlTags;
     private javax.swing.JList<String> lstSavedSearchEngines;
+    private javax.swing.JTextField txtBloggerEmil;
+    private javax.swing.JTextField txtGmailAddress;
     private javax.swing.JTextField txtHtmlTagName;
+    private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtSearchSyntax;
     private javax.swing.JTextField txtSearchURL;
     // End of variables declaration//GEN-END:variables

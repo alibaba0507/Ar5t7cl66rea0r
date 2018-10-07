@@ -46,6 +46,8 @@ public class ConnectionManagerUI {
      */
     public Document openFile(String url) {
         Document doc = null;
+        if (!new File(url).exists())
+            return doc;
         try {
             doc = Jsoup.parse(new File(url), "UTF-8");
 
@@ -107,7 +109,10 @@ public class ConnectionManagerUI {
                     String orig = tn.text();
                     String newPhrase = spinEngine.update(orig, false);
                     if (!orig.equalsIgnoreCase(newPhrase)) {
-                        tn.text(orig.replaceAll(orig, newPhrase));
+                        TextNode newTn = new TextNode(newPhrase);
+                      //  newTn.
+                        tn.replaceWith(newTn); // tn.text(orig.replaceAll(orig, newPhrase));
+                        //ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + tn.text() + " ---- \r\n\r\n");
                     }
                     // ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + newPhrase.trim() + " ---- ");
                     //  tn.text(orig.replaceAll("changeme", "<changed>changeme</changed>"));
@@ -115,7 +120,10 @@ public class ConnectionManagerUI {
             }// end for
 
             File f = new File(url);
-            String fileDirectory = f.getParent() + ArticleManagmentMain.FILE_SEPARATOR + "spin";
+            
+            String fileDirectory = f.getParent();
+           if (!fileDirectory.endsWith(ArticleManagmentMain.FILE_SEPARATOR + "spin"))
+                fileDirectory = f.getParent() + ArticleManagmentMain.FILE_SEPARATOR + "spin";
             File copyDir = new File(fileDirectory);
             if (!copyDir.exists()
                     || !copyDir.isDirectory()) {
@@ -128,7 +136,7 @@ public class ConnectionManagerUI {
             }
 
             PrintWriter writer = new PrintWriter(f, "UTF-8");
-            writer.write(doc.outerHtml());
+            writer.write(doc.toString());
             writer.flush();
             writer.close();
 

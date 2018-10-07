@@ -6,6 +6,7 @@
 package articlecreator.gui.run;
 
 //import articlecreator.gui.MyBasicTextAreaUI;
+import articlecreator.gui.components.OpenPoject;
 import articlecreator.gui.components.Settings;
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.InnerFramesUI;
@@ -17,6 +18,7 @@ import articlecreator.gui.components.ui.StatusPanelUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -31,9 +33,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,9 +63,10 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
- 
+
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 import javax.swing.plaf.metal.MetalTabbedPaneUI;
 import org.json.simple.JSONArray;
@@ -81,6 +86,10 @@ public class ArticleManagmentMain extends JFrame {
     public static final int MAX_AMOUNT_OF_BAD_WORDS = 100;
     public static final String REQUEST_URL = "http://thesaurus.altervista.org/thesaurus/v1?";
     public static final String MY_API_KEY = "zyQOWZsKlGVzWBGhc47S"; // "Thesaurus" API KEY
+    public static final String EMAIL_PATTERN
+            = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+
     // private ColorMenu foregroundMenu1, backgroundMenu1, foregroundMenu2, backgroundMenu2;
     private final JDesktopPane desktop;
     private final JToolBar toolBar;
@@ -98,11 +107,13 @@ public class ArticleManagmentMain extends JFrame {
     private final JSplitPane vSplit;
     private final JComboBox cbFiles;
     private static ArticleManagmentMain instance;
-    private  JTextArea console;
+    private JTextArea console;
+
     public ArticleManagmentMain() {
         super("ArticleManagentSystem");
-        if (ArticleManagmentMain.instance == null)
-              ArticleManagmentMain.instance = this;
+        if (ArticleManagmentMain.instance == null) {
+            ArticleManagmentMain.instance = this;
+        }
         desktop = new JDesktopPane();
         toolBar = new JToolBar();
         menuBar = new JMenuBar();
@@ -128,15 +139,26 @@ public class ArticleManagmentMain extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    JInternalFrame frame = InnerFramesUI.getInstance().ceateProjectFrame(null, null);
-                    // JInternalFrame frame = createProjectFrame(null, null, null);
-                    try {
-                        frame.moveToFront();
-                        frame.setMaximum(true);
-                        frame.setSelected(true);
-                    } catch (Exception ez) {
-                        ez.printStackTrace();
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Cursor cursor = projectList.getParent().getCursor();
+                            projectList.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                            JInternalFrame frame = InnerFramesUI.getInstance().ceateProjectFrame(null, null);
+                            // JInternalFrame frame = createProjectFrame(null, null, null);
+                            try {
+                                frame.moveToFront();
+                                frame.setMaximum(true);
+                                frame.setSelected(true);
+                            } catch (Exception ez) {
+                                ez.printStackTrace();
+                            }finally{
+                               projectList.getParent().setCursor(cursor);
+                            }
+                        }
+                    });
+
                 }
             }
 
@@ -157,12 +179,12 @@ public class ArticleManagmentMain extends JFrame {
         try {
             consolesList.setModel(consolesListModel);
             projectList.setModel(projectListModel);
-         
+
         } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
 
-       // JScrollPane commandScrollPane = new JScrollPane(consolesList);
+        // JScrollPane commandScrollPane = new JScrollPane(consolesList);
         JScrollPane projectsScrollPane = new JScrollPane(projectList);
 
         /*JPanel commandPanel = new JPanel(new BorderLayout());
@@ -171,7 +193,7 @@ public class ArticleManagmentMain extends JFrame {
         commandLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
         commandPanel.add(commandLabel, BorderLayout.NORTH);
         commandPanel.add(commandScrollPane, BorderLayout.CENTER);
-*/
+         */
         JPanel projectPanel = new JPanel(new BorderLayout());
         JLabel projectLabel = new JLabel("Projects:");
         projectLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/Open24.gif")));
@@ -186,26 +208,23 @@ public class ArticleManagmentMain extends JFrame {
         int[] keys = {KeyEvent.VK_0, KeyEvent.VK_1};
         tabbedPane.addTab(tabs[0], projectPanel);
         tabbedPane.setMnemonicAt(0, ms[0]);
-       //tabbedPane.addTab(tabs[1], commandPanel);
-       // tabbedPane.setMnemonicAt(1, ms[1]);
+        //tabbedPane.addTab(tabs[1], commandPanel);
+        // tabbedPane.setMnemonicAt(1, ms[1]);
         //tabbedPane.setMnemonicAt(i, keys[i]);
 
-       // markedLinesList = new JList();
-       // markedLinesList.setModel(new DefaultListModel());
-      //  markedLinesList.addListSelectionListener(new ActionsUI().new MarkedLinesListener(markedLinesList));
-      //  markedLinesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        // markedLinesList = new JList();
+        // markedLinesList.setModel(new DefaultListModel());
+        //  markedLinesList.addListSelectionListener(new ActionsUI().new MarkedLinesListener(markedLinesList));
+        //  markedLinesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         Dimension dim = new Dimension(0, 0);
 
 //        JScrollPane lineScrollPane = new JScrollPane(markedLinesList);
-      //  JPanel linePanel = new JPanel(new BorderLayout());
-  //      JLabel lineLabel = new JLabel("Marked Lines:");
-
-    //    lineLabel.addMouseListener(new ActionsUI().new LinesMouseListener(markedLinesList));
-    //    lineLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
-     //   linePanel.add(lineLabel, BorderLayout.NORTH);
-     //   linePanel.add(lineScrollPane, BorderLayout.CENTER);
-
+        //  JPanel linePanel = new JPanel(new BorderLayout());
+        //      JLabel lineLabel = new JLabel("Marked Lines:");
+        //    lineLabel.addMouseListener(new ActionsUI().new LinesMouseListener(markedLinesList));
+        //    lineLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+        //   linePanel.add(lineLabel, BorderLayout.NORTH);
+        //   linePanel.add(lineScrollPane, BorderLayout.CENTER);
         listSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabbedPane/*commandPanel*/, null/*linePanel*/);
         listSplit.setDividerLocation(140);
 
@@ -215,8 +234,8 @@ public class ArticleManagmentMain extends JFrame {
         hSplit.setMinimumSize(dim);
 
         // Initialize default console window for displaying program output
-         console = new JTextArea();
-         ProjectsUI.console = console;
+        console = new JTextArea();
+        ProjectsUI.console = console;
         String setting = (String) PropertiesUI.getInstance().getDefaultProps().get("SETTING");
         if (setting != null && setting.equals("CUSTOM")) {
             customizeTextArea(console, "CUSTOM_CONSOLE");
@@ -243,9 +262,9 @@ public class ArticleManagmentMain extends JFrame {
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         viewport = jsp.getViewport();
-      //  MyBasicTextAreaUI myUID = new MyBasicTextAreaUI(console, null, true);
-      //  myUID.setColor(getLineColor((String) PropertiesUI.getInstance().getDefaultProps().get("SETTING"), "CONSOLE"));
-       // console.setUI(myUID);
+        //  MyBasicTextAreaUI myUID = new MyBasicTextAreaUI(console, null, true);
+        //  myUID.setColor(getLineColor((String) PropertiesUI.getInstance().getDefaultProps().get("SETTING"), "CONSOLE"));
+        // console.setUI(myUID);
         //console.addMouseListener(new ConsoleMouseListener(console, myUID, this));
         console.setText("JUST TO TEST >>>>");
         consolesList.setSelectedIndex(0);
@@ -290,7 +309,7 @@ public class ArticleManagmentMain extends JFrame {
 
         //hasStartProcess = true;
         // Start a process to extract articles if any
-      //  new ActionsUI().new ExtractArticlesAction().actionPerformed(null);
+        //  new ActionsUI().new ExtractArticlesAction().actionPerformed(null);
         /*
          articleExtractor = new ArticleExtractor(defaultProps, console);
         articleScanerTimer = new java.util.Timer();
@@ -301,8 +320,9 @@ public class ArticleManagmentMain extends JFrame {
     public void reloadProjectTree() {
         projectListModel.clear();
         String savedProjects = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
-        if (savedProjects == null)
+        if (savedProjects == null) {
             return;
+        }
         JSONObject savedProjJSON = new JSONObject();
         JSONParser parser = new JSONParser();
         try {
@@ -335,13 +355,14 @@ public class ArticleManagmentMain extends JFrame {
         }
 
     }
-    
-    public static ArticleManagmentMain getInstance()
-    {
-         if (ArticleManagmentMain.instance == null)
-             ArticleManagmentMain.instance = new ArticleManagmentMain();
-         return ArticleManagmentMain.instance;
+
+    public static ArticleManagmentMain getInstance() {
+        if (ArticleManagmentMain.instance == null) {
+            ArticleManagmentMain.instance = new ArticleManagmentMain();
+        }
+        return ArticleManagmentMain.instance;
     }
+
     public Color getLineColor(String setting, String type) {
         // Setting is not returned here becaue this method is going to
         // be reused by FontColorPanel.java
@@ -436,11 +457,11 @@ public class ArticleManagmentMain extends JFrame {
         JButton button = null;
         JMenuItem menuItem = null;
         JMenu fileMenu = new JMenu("File"),
-                editMenu = new JMenu("Edit"),
+                /*     editMenu = new JMenu("Edit"),*/
                 executeMenu = new JMenu("Execute"),
                 optionMenu = new JMenu("Option"),
-                fileWindowMenu = new JMenu("Editor"),
-                consoleMenu = new JMenu("Console"),
+                /*fileWindowMenu = new JMenu("Editor"),*/
+                /*consoleMenu = new JMenu("Console"),*/
                 helpMenu = new JMenu("Help");
         fileMenu.setMnemonic('f');
         // editMenu.setMnemonic('e');
@@ -462,6 +483,7 @@ public class ArticleManagmentMain extends JFrame {
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 KeyEvent.CTRL_MASK));
 
+        /*
         actions.openFile = new ActionsUI().new OpenAction();
         // Opening an existing file
         button = new JButton(actions.openFile);
@@ -470,34 +492,37 @@ public class ArticleManagmentMain extends JFrame {
         button.setRequestFocusEnabled(false);
         button.setMargin(new Insets(0, 0, 0, 0));
         toolBar.add(button);
-        menuItem = fileMenu.add(actions.openFile);
-        menuItem.setMnemonic('o');
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
-                KeyEvent.CTRL_MASK));
-
-        actions.saveFile = new ActionsUI().new SavedAction();
+         */
+        // menuItem = fileMenu.add(actions.openFile);
+        // menuItem.setMnemonic('o');
+        // menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
+        //        KeyEvent.CTRL_MASK));
+        // actions.saveFile = new ActionsUI().new SavedAction();
         // Add Save button function to toolbar 
+        /* 
         button = new JButton(actions.saveFile);
         button.setText(null);
         button.setToolTipText("Save File");
         button.setRequestFocusEnabled(false);
         button.setMargin(new Insets(0, 0, 0, 0));
         toolBar.add(button);
-
+         */
         // Menu items for "Save..." and "Save As" in fileMenu
+        /*
         menuItem = fileMenu.add(actions.saveFile);
         menuItem.setMnemonic('s');
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 KeyEvent.CTRL_MASK));
 
         actions.saveFileAs = new ActionsUI().new SaveFileAsAction();
+        
         menuItem = fileMenu.add(actions.saveFileAs);
         menuItem.setMnemonic('a');
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A,
                 InputEvent.SHIFT_MASK));
 
         fileMenu.addSeparator();
-
+         */
         actions.exitAction = new ActionsUI().new ExitAction();
         // Exit menu item in file menu
         menuItem = fileMenu.add(actions.exitAction);
@@ -508,8 +533,8 @@ public class ArticleManagmentMain extends JFrame {
         // Menu item for preferences
         // This is preference box where we can put all
         // our goodies
-        final Settings settings = new Settings(this,true);
-        menuItem = optionMenu.add(new AbstractAction() {
+        final Settings settings = new Settings(this, true);
+        Action settingsAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 settings.pack();
@@ -517,12 +542,24 @@ public class ArticleManagmentMain extends JFrame {
                 //settings.Layout();
                 transferFocusToTextArea();
             }
-        });
+        };
+        menuItem = optionMenu.add(settingsAction);
         menuItem.setText("Preferences");
+        menuItem.setIcon(new ImageIcon(AWTUtils.getIcon(null, "/images/24-settings-silver.png")));
         menuItem.setMnemonic('p');
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
                 KeyEvent.CTRL_MASK));
 
+        // Cut button and menu item
+        button = new JButton(settingsAction);
+        button.setText(null);
+        button.setIcon(new ImageIcon(AWTUtils.getIcon(null, "/images/24-settings-silver.png")));
+        button.setToolTipText("Preferences");
+        button.setRequestFocusEnabled(false);
+        button.setMargin(new Insets(0, 0, 0, 0));
+        toolBar.add(button);
+
+        /*
         // Cut button and menu item
         actions.cutAction = new ActionsUI().new CutAction();
         button = new JButton(actions.cutAction);
@@ -532,8 +569,9 @@ public class ArticleManagmentMain extends JFrame {
         button.setRequestFocusEnabled(false);
         button.setMargin(new Insets(0, 0, 0, 0));
         toolBar.add(button);
-
-        menuItem = editMenu.add(actions.cutAction);
+         */
+ /*
+       menuItem = editMenu.add(actions.cutAction);
         menuItem.setText("Cut");
         menuItem.setMnemonic('x');
         // menuItem.setIcon(cutIcon);
@@ -627,7 +665,7 @@ public class ArticleManagmentMain extends JFrame {
                 KeyEvent.CTRL_MASK));
 
         executeMenu.addSeparator();
-
+         */
         // Add Stop function  to toolbar and menu item
         actions.stopAction = new ActionsUI().new StopAction();
         button = new JButton(actions.stopAction);
@@ -658,7 +696,7 @@ public class ArticleManagmentMain extends JFrame {
 
         // Add all JMenu instances to menu bar
         menuBar.add(fileMenu);
-        menuBar.add(editMenu);
+        //  menuBar.add(editMenu);
         menuBar.add(executeMenu);
         menuBar.add(optionMenu);
         menuBar.add(helpMenu);
@@ -686,7 +724,6 @@ public class ArticleManagmentMain extends JFrame {
         return (JInternalFrame) desktop.getSelectedFrame();
     }
 
-  
     class MnemonicTabbedPane extends JTabbedPane {
 
         Hashtable mnemonics = null;
@@ -775,4 +812,30 @@ public class ArticleManagmentMain extends JFrame {
             }
         }
     }
+    
+   public static String encrypt(String plain) {
+   String b64encoded = Base64.getEncoder().encodeToString(plain.getBytes());
+
+   // Reverse the string
+   String reverse = new StringBuffer(b64encoded).reverse().toString();
+
+   StringBuilder tmp = new StringBuilder();
+   final int OFFSET = 4;
+   for (int i = 0; i < reverse.length(); i++) {
+      tmp.append((char)(reverse.charAt(i) + OFFSET));
+   }
+   return tmp.toString();
+}
+   
+   
+   public static String decrypt(String secret) {
+   StringBuilder tmp = new StringBuilder();
+   final int OFFSET = 4;
+   for (int i = 0; i < secret.length(); i++) {
+      tmp.append((char)(secret.charAt(i) - OFFSET));
+   }
+
+   String reversed = new StringBuffer(tmp.toString()).reverse().toString();
+   return new String(Base64.getDecoder().decode(reversed));
+}
 }
