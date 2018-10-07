@@ -163,6 +163,7 @@ public class Settings extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         txtSearchSyntax = new javax.swing.JTextField();
         btnRedirect = new javax.swing.JRadioButton();
+        btnHelpSearch = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -171,6 +172,7 @@ public class Settings extends javax.swing.JDialog {
         lstSaveHtmlTags = new javax.swing.JList();
         btnAddToTags = new javax.swing.JButton();
         btnDelTags = new javax.swing.JButton();
+        btnHelpParser = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         txtGmailAddress = new javax.swing.JTextField();
@@ -182,6 +184,7 @@ public class Settings extends javax.swing.JDialog {
         btnRemoveBlogEmail = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         txtPassword = new javax.swing.JPasswordField();
+        btnHelpEmails = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -203,6 +206,7 @@ public class Settings extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(lstSavedSearchEngines);
 
+        btnAddToSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Back24.gif"))); // NOI18N
         btnAddToSearch.setText("Add ");
         btnAddToSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,6 +214,7 @@ public class Settings extends javax.swing.JDialog {
             }
         });
 
+        btnDelSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Delete24.gif"))); // NOI18N
         btnDelSearch.setText("Delete");
         btnDelSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -226,6 +231,9 @@ public class Settings extends javax.swing.JDialog {
             }
         });
 
+        btnHelpSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
+        btnHelpSearch.setText("Help");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -238,13 +246,15 @@ public class Settings extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btnRedirect)
-                                .addContainerGap())
-                            .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(btnDelSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(btnAddToSearch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(33, 33, 33))))
+                                .addGap(33, 33, 33))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnRedirect)
+                                    .addComponent(btnHelpSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap())))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
@@ -274,7 +284,9 @@ public class Settings extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnDelSearch)
                         .addGap(18, 18, 18)
-                        .addComponent(btnRedirect)))
+                        .addComponent(btnRedirect)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnHelpSearch)))
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
@@ -294,6 +306,7 @@ public class Settings extends javax.swing.JDialog {
         lstSaveHtmlTags.setModel(new DefaultListModel());
         jScrollPane2.setViewportView(lstSaveHtmlTags);
 
+        btnAddToTags.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Back24.gif"))); // NOI18N
         btnAddToTags.setText("Add ");
         btnAddToTags.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -301,12 +314,16 @@ public class Settings extends javax.swing.JDialog {
             }
         });
 
+        btnDelTags.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Delete24.gif"))); // NOI18N
         btnDelTags.setText("Delete");
         btnDelTags.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDelTagsActionPerformed(evt);
             }
         });
+
+        btnHelpParser.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
+        btnHelpParser.setText("Help");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -328,7 +345,8 @@ public class Settings extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnDelTags, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnAddToTags, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(btnAddToTags, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnHelpParser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(33, 33, 33))))
         );
         jPanel2Layout.setVerticalGroup(
@@ -346,6 +364,8 @@ public class Settings extends javax.swing.JDialog {
                         .addComponent(btnAddToTags)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnDelTags)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnHelpParser)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
                 .addContainerGap())
@@ -371,6 +391,7 @@ public class Settings extends javax.swing.JDialog {
 
         jLabel5.setText("Email for Blogger Blog");
 
+        btnAddBlogEmail.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Back24.gif"))); // NOI18N
         btnAddBlogEmail.setText("Add");
         btnAddBlogEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -378,6 +399,7 @@ public class Settings extends javax.swing.JDialog {
             }
         });
 
+        btnRemoveBlogEmail.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Delete24.gif"))); // NOI18N
         btnRemoveBlogEmail.setText("REmove");
         btnRemoveBlogEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -394,6 +416,9 @@ public class Settings extends javax.swing.JDialog {
             }
         });
 
+        btnHelpEmails.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
+        btnHelpEmails.setText("Help");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -402,11 +427,12 @@ public class Settings extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnRemoveBlogEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnAddBlogEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(btnAddBlogEmail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnHelpEmails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -439,7 +465,9 @@ public class Settings extends javax.swing.JDialog {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(btnAddBlogEmail)
                         .addGap(18, 18, 18)
-                        .addComponent(btnRemoveBlogEmail))
+                        .addComponent(btnRemoveBlogEmail)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnHelpEmails))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(32, Short.MAX_VALUE))
         );
@@ -677,6 +705,9 @@ public class Settings extends javax.swing.JDialog {
     private javax.swing.JButton btnAddToTags;
     private javax.swing.JButton btnDelSearch;
     private javax.swing.JButton btnDelTags;
+    private javax.swing.JButton btnHelpEmails;
+    private javax.swing.JButton btnHelpParser;
+    private javax.swing.JButton btnHelpSearch;
     private javax.swing.JRadioButton btnRedirect;
     private javax.swing.JButton btnRemoveBlogEmail;
     private javax.swing.JLabel jLabel1;

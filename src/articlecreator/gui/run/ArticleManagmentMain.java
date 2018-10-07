@@ -674,6 +674,15 @@ public class ArticleManagmentMain extends JFrame {
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setToolTipText("Terminate Current Process");
         toolBar.add(button);
+        
+        button = new JButton(new ActionsUI().new Help());
+        button.setText(null);
+     //   button.setIcon(new ImageIcon(AWTUtils.getIcon(null, "/images/24-settings-silver.png")));
+        button.setToolTipText("Help");
+        button.setRequestFocusEnabled(false);
+        button.setMargin(new Insets(0, 0, 0, 0));
+        toolBar.add(button);
+        
         menuItem = executeMenu.add(actions.stopAction);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,
                 KeyEvent.CTRL_MASK));

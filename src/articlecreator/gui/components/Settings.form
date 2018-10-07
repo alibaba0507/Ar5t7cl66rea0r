@@ -57,15 +57,18 @@
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="btnRedirect" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Component id="btnDelSearch" max="32767" attributes="0"/>
                                           <Component id="btnAddToSearch" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="33" pref="33" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="btnRedirect" min="-2" max="-2" attributes="0"/>
+                                          <Component id="btnHelpSearch" min="-2" pref="96" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -107,6 +110,8 @@
                               <Component id="btnDelSearch" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="btnRedirect" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnHelpSearch" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace pref="23" max="32767" attributes="0"/>
@@ -151,6 +156,9 @@
             </Container>
             <Component class="javax.swing.JButton" name="btnAddToSearch">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Back24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Add "/>
               </Properties>
               <Events>
@@ -159,6 +167,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="btnDelSearch">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Delete24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Delete"/>
               </Properties>
               <Events>
@@ -179,6 +190,14 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRedirectActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnHelpSearch">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/help24.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Help"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
@@ -214,6 +233,7 @@
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="btnDelTags" alignment="0" max="32767" attributes="0"/>
                                   <Component id="btnAddToTags" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="btnHelpParser" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
                           </Group>
@@ -237,6 +257,8 @@
                               <Component id="btnAddToTags" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="btnDelTags" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="btnHelpParser" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jScrollPane2" pref="176" max="32767" attributes="0"/>
@@ -282,6 +304,9 @@
             </Container>
             <Component class="javax.swing.JButton" name="btnAddToTags">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Back24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Add "/>
               </Properties>
               <Events>
@@ -290,11 +315,22 @@
             </Component>
             <Component class="javax.swing.JButton" name="btnDelTags">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Delete24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Delete"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDelTagsActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnHelpParser">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/help24.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Help"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>
@@ -314,11 +350,12 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jScrollPane3" pref="309" max="32767" attributes="0"/>
+                              <Component id="jScrollPane3" pref="281" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="btnRemoveBlogEmail" max="32767" attributes="0"/>
                                   <Component id="btnAddBlogEmail" max="32767" attributes="0"/>
+                                  <Component id="btnHelpEmails" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -363,6 +400,8 @@
                               <Component id="btnAddBlogEmail" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="btnRemoveBlogEmail" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnHelpEmails" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="jScrollPane3" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -411,6 +450,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="btnAddBlogEmail">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Back24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Add"/>
               </Properties>
               <Events>
@@ -419,6 +461,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="btnRemoveBlogEmail">
               <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/Delete24.gif"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="REmove"/>
               </Properties>
               <Events>
@@ -437,6 +482,14 @@
               <Events>
                 <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="txtPasswordFocusLost"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnHelpEmails">
+              <Properties>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                  <Image iconType="3" name="/images/help24.png"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Help"/>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

@@ -1291,4 +1291,18 @@ public class ActionsUI {
         Toolkit.getDefaultToolkit().beep();
         System.exit(0);
     }
+    
+    public class Help extends AbstractAction
+    {
+         public Help()
+         {
+                super("Run Project", new ImageIcon(AWTUtils.getIcon(null, "/images/help24.png")));
+  
+         }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+    }
 }
