@@ -301,6 +301,7 @@ public class ActionsUI {
             }
             for (int i = 0; i < indx.length; i++) {
                 LinksObject l = this.comp.getObjectFromTableIndex(indx[i]);
+                
                 File f = new File(l.getLocalHTMLFile());
                 String fileToSend = f.getParent()+ ArticleManagmentMain.FILE_SEPARATOR
                         + "spin" + ArticleManagmentMain.FILE_SEPARATOR
@@ -308,7 +309,7 @@ public class ActionsUI {
                 Document doc = con.openFile(fileToSend);
                 if (doc != null) {
                     MailService mail = new MailService();
-                    mail.constractMessade(bEmails, "Publish from ArticleCreator", doc.toString());
+                    mail.constractMessade(bEmails, l.getTitle(), doc.toString());
                 }
             }
         }

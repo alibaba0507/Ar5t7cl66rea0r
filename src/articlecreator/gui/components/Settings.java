@@ -8,7 +8,6 @@ package articlecreator.gui.components;
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.run.ArticleManagmentMain;
-import com.sun.org.apache.xml.internal.security.algorithms.MessageDigestAlgorithm;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
