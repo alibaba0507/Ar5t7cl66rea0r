@@ -16,6 +16,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Panel;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -301,9 +302,9 @@ public class ActionsUI {
             }
             for (int i = 0; i < indx.length; i++) {
                 LinksObject l = this.comp.getObjectFromTableIndex(indx[i]);
-                
+
                 File f = new File(l.getLocalHTMLFile());
-                String fileToSend = f.getParent()+ ArticleManagmentMain.FILE_SEPARATOR
+                String fileToSend = f.getParent() + ArticleManagmentMain.FILE_SEPARATOR
                         + "spin" + ArticleManagmentMain.FILE_SEPARATOR
                         + f.getName();
                 Document doc = con.openFile(fileToSend);
@@ -376,6 +377,7 @@ public class ActionsUI {
         }
 
         public void actionPerformed(ActionEvent e) {
+            ProjectsUI.selectedProjectItem = null;
             openProjectFile(null, "New Project");
             //openFile(null);
 
@@ -708,9 +710,51 @@ public class ActionsUI {
 
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
-            JOptionPane.showConfirmDialog(null, "Exit Not Implemented yet ...");
-            //openFile(null);
+            if (ProjectsUI.selectedProjectItem != null) {
+                
+                int input = JOptionPane.showConfirmDialog(null, "Do you want to delete selected project ...");
+                if (input == 0) {
+                    int delDirectory = JOptionPane.showConfirmDialog(null, "Do you want to delete All Articles and Directory created by this Project ...");
+                    if (ProjectsUI.selectedProjectItem instanceof ProjectItem) {
+                        ProjectItem prj = (ProjectItem) ProjectsUI.selectedProjectItem;
+                        try {
+                            String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
+                            JSONObject savedProjJSON = new JSONObject();
+                            JSONParser parser = new JSONParser();
+                            JSONObject toBeDeletedProjJSON = (JSONObject) parser.parse(prj.getJSONObject());
+                            String deleteName = (String)toBeDeletedProjJSON.get("name");
+                            String deleteDir = (String)toBeDeletedProjJSON.get("dir");
+                            savedProjJSON = (JSONObject) parser.parse(projProperties);
+                            JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
+                            Iterator<JSONObject> objs = projectsJSON.iterator();
 
+                            while (objs.hasNext()) {
+                                final JSONObject p = (JSONObject) objs.next();
+                                String dir = (String) p.get("dir");
+                                String name = (String) p.get("name");
+                                if (deleteName.equals(name) && deleteDir.equals(dir))
+                                {
+                                    projectsJSON.remove(p);
+                                    if (delDirectory == 0)
+                                    {
+                                        FileChooserUI.delete(new File(dir));
+                                    }
+                                    break;
+                                }
+                            } // end while 
+                            savedProjJSON.put("prj",projectsJSON);
+                            PropertiesUI.getInstance().getDefaultProps().put("PROJECTS",savedProjJSON.toJSONString());
+                            PropertiesUI.getInstance().saveProperties();
+                             InnerFramesUI.getInstance().closeFrame(deleteName);
+                            ProjectsUI.reloadProjectTree(null);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            //openFile(null);
         }
     } // End NewAction
 
@@ -1292,18 +1336,18 @@ public class ActionsUI {
         Toolkit.getDefaultToolkit().beep();
         System.exit(0);
     }
-    
-    public class Help extends AbstractAction
-    {
-         public Help()
-         {
-                super("Run Project", new ImageIcon(AWTUtils.getIcon(null, "/images/help24.png")));
-  
-         }
+
+    public class Help extends AbstractAction {
+
+        public Help() {
+            super("Run Project", new ImageIcon(AWTUtils.getIcon(null, "/images/help24.png")));
+
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
     }
 }

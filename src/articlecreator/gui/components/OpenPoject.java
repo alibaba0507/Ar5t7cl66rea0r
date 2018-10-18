@@ -8,6 +8,7 @@ package articlecreator.gui.components;
 import articlecreator.gui.components.ui.ActionsUI;
 import articlecreator.gui.components.ui.ProjectItem;
 import articlecreator.gui.components.ui.FileChooserUI;
+import articlecreator.gui.components.ui.InnerFramesUI;
 import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.run.ArticleManagmentMain;
@@ -483,19 +484,19 @@ public class OpenPoject extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(944, Short.MAX_VALUE)
                 .addComponent(btnProjectSave)
-                .addGap(20, 20, 20))
+                .addGap(32, 32, 32))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(159, 159, 159)
+                .addGap(167, 167, 167)
                 .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(859, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                             .addGap(70, 70, 70))
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -513,18 +514,18 @@ public class OpenPoject extends javax.swing.JPanel {
                             .addGap(18, 18, 18)
                             .addComponent(btnProjectFileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGap(23, 23, 23))
-                        .addComponent(jScrollPane1)
-                        .addComponent(txtProjName, javax.swing.GroupLayout.PREFERRED_SIZE, 421, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 728, Short.MAX_VALUE)
+                        .addComponent(txtProjName))
                     .addContainerGap()))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(66, 66, 66)
+                .addGap(65, 65, 65)
                 .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 127, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
                 .addComponent(btnProjectSave)
-                .addGap(22, 22, 22))
+                .addGap(23, 23, 23))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -549,7 +550,7 @@ public class OpenPoject extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addGap(18, 18, 18)
                             .addComponent(btnProjectFileChooser)))
-                    .addContainerGap(63, Short.MAX_VALUE)))
+                    .addContainerGap(68, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("Project", jPanel1);
@@ -656,9 +657,72 @@ public class OpenPoject extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        final String selectedText = txtSpin.getSelectedText();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Cursor cursor = OpenPoject.this.getParent().getCursor();
+                    OpenPoject.this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    String onlineAnswer = new Engine().updateOnLine(selectedText);
+                    ProjectsUI.console.append("\r\n ============================= Synonims =========================\r\n");
+                    ProjectsUI.console.append(selectedText + "\r\n");
+                    ProjectsUI.console.append("\r\n ============================= ONLINE Synonims =========================\r\n");
+                    String[] words = onlineAnswer.split(" ");
+                    for (int i = 0; i < words.length; i++) {
+                        ProjectsUI.console.append(words[i] + "\r\n");
+                    }
+                    ProjectsUI.console.append("\r\n ============================= END Synonims =========================\r\n");
+                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
+                    ProjectsUI.console.getCaret().setVisible(true);
+                    OpenPoject.this.getParent().setCursor(cursor);
+                    JOptionPane.showMessageDialog(txtSpin.getParent().getParent(), "Please Check Console");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void btnSpin1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpin1ActionPerformed
+        if (this.spinFile == null || this.spinFile.equals("")) {
+            return;
+        }
+        File f = new File(this.spinFile);
+        if (!f.exists()) {
+            return; // nothing to do here
+        }
+        new ActionsUI().spinArticle(this.spinFile, this);
+        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
+        txtSpin.setText(doc.outerHtml());
+        txtSpin.setCaretPosition(0);
+        txtSpin.getCaret().setSelectionVisible(true);
+    }//GEN-LAST:event_btnSpin1ActionPerformed
+
+    private void btnSaveSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveSpinActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSaveSpinActionPerformed
+
+    private void btnSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpinActionPerformed
+        if (this.originalFile == null || this.originalFile.equals("")) {
+            return;
+        }
+        File f = new File(this.originalFile);
+        if (!f.exists()) {
+            return; // nothing to do here
+        }
+        new ActionsUI().spinArticle(this.originalFile, this);
+        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
+        txtSpin.setText(doc.outerHtml());
+        txtSpin.setCaretPosition(0);
+        txtSpin.getCaret().setSelectionVisible(true);
+    }//GEN-LAST:event_btnSpinActionPerformed
 
     private void btnSaveArticleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveArticleActionPerformed
         // TODO add your handling code here:
@@ -710,71 +774,6 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         }  // End while
     }//GEN-LAST:event_btnProjectFileChooserActionPerformed
-
-    private void btnSaveSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveSpinActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnSaveSpinActionPerformed
-
-    private void btnSpinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpinActionPerformed
-        if (this.originalFile == null || this.originalFile.equals("")) {
-            return;
-        }
-        File f = new File(this.originalFile);
-        if (!f.exists()) {
-            return; // nothing to do here
-        }
-        new ActionsUI().spinArticle(this.originalFile, this);
-        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
-        txtSpin.setText(doc.outerHtml());
-        txtSpin.setCaretPosition(0);
-        txtSpin.getCaret().setSelectionVisible(true);
-
-    }//GEN-LAST:event_btnSpinActionPerformed
-
-    private void btnSpin1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSpin1ActionPerformed
-        if (this.spinFile == null || this.spinFile.equals("")) {
-            return;
-        }
-        File f = new File(this.spinFile);
-        if (!f.exists()) {
-            return; // nothing to do here
-        }
-        new ActionsUI().spinArticle(this.spinFile, this);
-        Document doc = new ConnectionManagerUI().openFile(this.spinFile);
-        txtSpin.setText(doc.outerHtml());
-        txtSpin.setCaretPosition(0);
-        txtSpin.getCaret().setSelectionVisible(true);
-    }//GEN-LAST:event_btnSpin1ActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        final String selectedText = txtSpin.getSelectedText();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Cursor cursor = OpenPoject.this.getParent().getCursor();
-                    OpenPoject.this.getParent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                    String onlineAnswer = new Engine().updateOnLine(selectedText);
-                    ProjectsUI.console.append("\r\n ============================= Synonims =========================\r\n");
-                    ProjectsUI.console.append(selectedText + "\r\n");
-                    ProjectsUI.console.append("\r\n ============================= ONLINE Synonims =========================\r\n");
-                    String[] words = onlineAnswer.split(" ");
-                    for (int i = 0; i < words.length; i++) {
-                        ProjectsUI.console.append(words[i] + "\r\n");
-                    }
-                    ProjectsUI.console.append("\r\n ============================= END Synonims =========================\r\n");
-                    ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
-                    ProjectsUI.console.getCaret().setVisible(true);
-                    OpenPoject.this.getParent().setCursor(cursor);
-                    JOptionPane.showMessageDialog(txtSpin.getParent().getParent(), "Please Check Console");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     public void save() {
         String projName, keyWords, dir;
@@ -836,8 +835,8 @@ public class OpenPoject extends javax.swing.JPanel {
         savedProjJSON.put("prj", projectsJSON);
         PropertiesUI.getInstance().getDefaultProps().put("PROJECTS", savedProjJSON.toJSONString());
         PropertiesUI.getInstance().saveProperties();
-
-        reloadProjectTree();
+       
+        ProjectsUI.reloadProjectTree(null);
     }
 
     public String getProjectDir() {
@@ -926,47 +925,7 @@ public class OpenPoject extends javax.swing.JPanel {
         }
     }
 
-    public void reloadProjectTree() {
-        if (ProjectsUI.projectListModel == null) {
-            return;
-        }
-
-        ProjectsUI.projectListModel.clear();
-        String savedProjects = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
-        JSONObject savedProjJSON = new JSONObject();
-        JSONParser parser = new JSONParser();
-        try {
-            savedProjJSON = (JSONObject) parser.parse(savedProjects);
-            JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
-            Iterator<JSONObject> objs = projectsJSON.iterator();
-            int selectedIndex = 0;
-            int cnt = 0;
-            while (objs.hasNext()) {
-
-                final JSONObject p = (JSONObject) objs.next();
-                if (((String) p.get("name")).equals(txtProjName.getText())) {
-                    selectedIndex = cnt;
-                }
-                cnt++;
-                ProjectsUI.projectListModel.addElement(new ProjectItem() {
-                    @Override
-                    public String toString() {
-                        return (String) p.get("name");
-                    }
-
-                    @Override
-                    public String getJSONObject() {
-                        return p.toJSONString();
-                    }
-                });
-            }// end while
-            ProjectsUI.projectList.setSelectedIndex(cnt);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
+   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnImport;

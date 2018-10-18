@@ -47,7 +47,17 @@ public class InnerFramesUI {
             }
         }
     }
-
+    
+    public void closeFrame(String title)
+    {
+      JInternalFrame[] frames = desktop.getAllFrames();
+        for (int i = 0; i < frames.length; i++) {
+            if (title != null && frames[i].getTitle().equals(title)) {
+                desktop.remove(frames[i]);
+                break;
+            }
+        }
+    }
     public JInternalFrame ceateProjectFrame(File file, String title) {
 
         if (title == null && ProjectsUI.selectedProjectItem == null) {
