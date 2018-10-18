@@ -73,6 +73,7 @@ import javax.swing.text.JTextComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.jsoup.nodes.Document;
 import sun.security.ssl.SSLSocketImpl;
 import za.co.utils.AWTUtils;
@@ -236,7 +237,8 @@ public class ActionsUI {
                 ProjectsUI.console.append(" >>>> Spining [" + articlePath + "] >>>>\r\n");
                 ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
                 ProjectsUI.console.getCaret().setVisible(true);
-                con.spinFile(articlePath);
+                Document doc = con.spinFile(articlePath);
+                comp.getSpinTextCompoent().setText(doc.outerHtml());
                 comp.getParent().setCursor(cursor);
             }
         });
@@ -354,7 +356,8 @@ public class ActionsUI {
                                 ProjectsUI.console.append(" >>>> Spining [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
                                 ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
                                 ProjectsUI.console.getCaret().setVisible(true);
-                                con.spinFile(obj.getLocalHTMLFile());
+                                Document doc =  con.spinFile(obj.getLocalHTMLFile());
+                                SpinSelectedArticles.this.comp.getSpinTextCompoent().setText(doc.outerHtml());
                                 //spinArticle(obj.getLocalHTMLFile(), SpinSelectedArticles.this.comp);
                             }
                         }
@@ -711,7 +714,7 @@ public class ActionsUI {
         public void actionPerformed(ActionEvent e) {
             // openProjectFile(null, "New Project");
             if (ProjectsUI.selectedProjectItem != null) {
-                
+
                 int input = JOptionPane.showConfirmDialog(null, "Do you want to delete selected project ...");
                 if (input == 0) {
                     int delDirectory = JOptionPane.showConfirmDialog(null, "Do you want to delete All Articles and Directory created by this Project ...");
@@ -722,8 +725,8 @@ public class ActionsUI {
                             JSONObject savedProjJSON = new JSONObject();
                             JSONParser parser = new JSONParser();
                             JSONObject toBeDeletedProjJSON = (JSONObject) parser.parse(prj.getJSONObject());
-                            String deleteName = (String)toBeDeletedProjJSON.get("name");
-                            String deleteDir = (String)toBeDeletedProjJSON.get("dir");
+                            String deleteName = (String) toBeDeletedProjJSON.get("name");
+                            String deleteDir = (String) toBeDeletedProjJSON.get("dir");
                             savedProjJSON = (JSONObject) parser.parse(projProperties);
                             JSONArray projectsJSON = (JSONArray) savedProjJSON.get("prj");
                             Iterator<JSONObject> objs = projectsJSON.iterator();
@@ -732,20 +735,18 @@ public class ActionsUI {
                                 final JSONObject p = (JSONObject) objs.next();
                                 String dir = (String) p.get("dir");
                                 String name = (String) p.get("name");
-                                if (deleteName.equals(name) && deleteDir.equals(dir))
-                                {
+                                if (deleteName.equals(name) && deleteDir.equals(dir)) {
                                     projectsJSON.remove(p);
-                                    if (delDirectory == 0)
-                                    {
+                                    if (delDirectory == 0) {
                                         FileChooserUI.delete(new File(dir));
                                     }
                                     break;
                                 }
                             } // end while 
-                            savedProjJSON.put("prj",projectsJSON);
-                            PropertiesUI.getInstance().getDefaultProps().put("PROJECTS",savedProjJSON.toJSONString());
+                            savedProjJSON.put("prj", projectsJSON);
+                            PropertiesUI.getInstance().getDefaultProps().put("PROJECTS", savedProjJSON.toJSONString());
                             PropertiesUI.getInstance().saveProperties();
-                             InnerFramesUI.getInstance().closeFrame(deleteName);
+                            InnerFramesUI.getInstance().closeFrame(deleteName);
                             ProjectsUI.reloadProjectTree(null);
                         } catch (Exception ex) {
                             ex.printStackTrace();
@@ -804,11 +805,17 @@ public class ActionsUI {
 
         private boolean hasStarted = false;
         private java.util.Timer timer;
-
+        private TimerTask task ;
         public StopAction() {
-            super("Stop", new ImageIcon(AWTUtils.getIcon(null, "/images/go.png")));
+            super("Fetch Articles ...", new ImageIcon(AWTUtils.getIcon(null, "/images/go.png")));
             //executor = new ScheduledThreadPoolExecutor(5);
             timer = new java.util.Timer();
+            task = new TimerTask() {
+                @Override
+                public void run() {
+                    extractArticles();
+                }
+            };
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -829,17 +836,13 @@ public class ActionsUI {
         }
 
         private void newSchedule() {
-            timer = new java.util.Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    extractArticles();
-                }
-            }, 1000, 30 * 1000);
+            //timer = new java.util.Timer();
+            timer.schedule(task, 1000);
 
         }
 
         private void stopProces() {
+           
             timer.cancel();
 
         }
@@ -884,17 +887,20 @@ public class ActionsUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             ScheduledThreadPoolExecutor t = new ScheduledThreadPoolExecutor(5);
-            t.scheduleAtFixedRate(new Runnable() {
+           // t.scheduleAtFixedRate(
+              SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     extractArticles();
                 }
-            }, 10, 200, TimeUnit.SECONDS);
+            });
+               //, 10, 0, TimeUnit.SECONDS);
 
         }
     }
 
     private void extractArticles() {
+
         String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
         if (projProperties == null || projProperties.isEmpty()) {
             return; // nothing to do
@@ -910,11 +916,25 @@ public class ActionsUI {
         Iterator<JSONObject> objs = projectsJSON.iterator();
         int selectedIndex = 0;
         int cnt = 0;
+        JSONObject selectedObject = null;
+        if (ProjectsUI.selectedProjectItem instanceof ProjectItem) {
+            try {
+                selectedObject = (JSONObject) parser.parse(((ProjectItem) ProjectsUI.selectedProjectItem).getJSONObject());
+            } catch (ParseException ex) {
+                Logger.getLogger(ActionsUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         while (objs.hasNext()) {
             final JSONObject p = (JSONObject) objs.next();
             String dir = (String) p.get("dir");
             String name = (String) p.get("name");
-            // key = keyWord , value = array of LinkObject
+            if (selectedObject == null || !selectedObject.get("name").equals(name)
+                    || !selectedObject.get("dir").equals(dir)) // key = keyWord , value = array of LinkObject
+            {
+                continue;
+            }
+
             Hashtable dirProp = PropertiesUI.getInstance().initProjectProperties(dir);
             Iterator it = dirProp.keySet().iterator();
             URL url = null;
@@ -925,8 +945,10 @@ public class ActionsUI {
                     if (link.getWordCount() == null || link.getWordCount().equals("") /*|| Integer.parseInt(link.getWordCount()) < 50*/) {
                         try {
                             processArticle(link, dir);
-                            if (link.getWordCount() == null || link.getWordCount().equals("")) {
-                                link.setWordCount("1");
+                            if (link.getWordCount() == null || link.getWordCount().equals("") 
+                                      || Integer.parseInt(link.getWordCount()) < 150) {
+                                //link.setWordCount("1");
+                                l.remove(link);
                             }
                             ProjectsUI.console.append(">>>>> Parsing aricle ... [" + link.getTitle() + "] >>>>\r\n");
                             ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);

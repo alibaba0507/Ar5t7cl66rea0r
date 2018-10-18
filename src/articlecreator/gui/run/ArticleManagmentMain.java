@@ -402,6 +402,9 @@ public class ArticleManagmentMain extends JFrame {
         actions.runProjectAction = new ActionsUI().new RunProjectAction();//rojectAction();
         menuItem.setAction(actions.runProjectAction);
         popupProj.add(menuItem);
+        menuItem = new JMenuItem();
+        menuItem.setAction(new ActionsUI().new StopAction());
+        popupProj.add(menuItem);
     }
 
     public void createPopup() {
@@ -698,10 +701,7 @@ public class ArticleManagmentMain extends JFrame {
         menuItem.setMnemonic('m');
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M,
                 KeyEvent.CTRL_MASK));
-        menuItem = helpMenu.add(actions.readMeAction);  // Menu item for About MyEditor
-        menuItem.setMnemonic('b');
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
-                KeyEvent.CTRL_MASK));
+       
 
         // Add all JMenu instances to menu bar
         menuBar.add(fileMenu);

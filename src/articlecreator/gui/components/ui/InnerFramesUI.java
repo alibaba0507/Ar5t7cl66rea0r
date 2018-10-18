@@ -54,6 +54,8 @@ public class InnerFramesUI {
         for (int i = 0; i < frames.length; i++) {
             if (title != null && frames[i].getTitle().equals(title)) {
                 desktop.remove(frames[i]);
+                frames[i].dispose();
+                desktop.repaint();
                 break;
             }
         }

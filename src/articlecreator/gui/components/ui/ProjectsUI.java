@@ -56,7 +56,8 @@ public class ProjectsUI {
                     }
                 });
             }// end while
-            ProjectsUI.projectList.setSelectedIndex(cnt);
+            ProjectsUI.projectList.setSelectedIndex(cnt - 1);
+            ProjectsUI.selectedProjectItem = ProjectsUI.projectList.getSelectedValue();
         } catch (Exception e) {
             e.printStackTrace();
         }
