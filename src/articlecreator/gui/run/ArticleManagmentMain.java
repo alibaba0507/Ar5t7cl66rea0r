@@ -678,7 +678,7 @@ public class ArticleManagmentMain extends JFrame {
         button.setToolTipText("Terminate Current Process");
         toolBar.add(button);
         
-        button = new JButton(new ActionsUI().new Help());
+        button = new JButton(new ActionsUI().new Help(null));
         button.setText(null);
      //   button.setIcon(new ImageIcon(AWTUtils.getIcon(null, "/images/24-settings-silver.png")));
         button.setToolTipText("Help");

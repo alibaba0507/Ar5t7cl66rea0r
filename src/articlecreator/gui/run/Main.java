@@ -5,6 +5,7 @@
  */
 package articlecreator.gui.run;
 
+import articlecreator.gui.components.ui.InnerFramesUI;
 import articlecreator.net.SSLCertificates;
 import articlecreator.spin.syntax.SynonymFinder;
 import java.io.IOException;
@@ -46,6 +47,7 @@ public class Main {
                 Thread.currentThread().yield();
                 splash.close();
                 frame.setVisible(true);
+                InnerFramesUI.getInstance().moveHelpFiles();
                 // }
             }
         }, 1000);

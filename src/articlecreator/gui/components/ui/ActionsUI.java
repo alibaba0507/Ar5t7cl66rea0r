@@ -356,7 +356,7 @@ public class ActionsUI {
                                 ProjectsUI.console.append(" >>>> Spining [" + obj.getLocalHTMLFile() + "] >>>>\r\n");
                                 ProjectsUI.console.setCaretPosition(ProjectsUI.console.getText().length() - 2);
                                 ProjectsUI.console.getCaret().setVisible(true);
-                                Document doc =  con.spinFile(obj.getLocalHTMLFile());
+                                Document doc = con.spinFile(obj.getLocalHTMLFile());
                                 SpinSelectedArticles.this.comp.getSpinTextCompoent().setText(doc.outerHtml());
                                 //spinArticle(obj.getLocalHTMLFile(), SpinSelectedArticles.this.comp);
                             }
@@ -803,9 +803,10 @@ public class ActionsUI {
 
     public class StopAction extends AbstractAction {
 
-        private boolean hasStarted = false;
+        public boolean hasStarted = false;
         private java.util.Timer timer;
-        private TimerTask task ;
+        private TimerTask task;
+
         public StopAction() {
             super("Fetch Articles ...", new ImageIcon(AWTUtils.getIcon(null, "/images/go.png")));
             //executor = new ScheduledThreadPoolExecutor(5);
@@ -813,7 +814,7 @@ public class ActionsUI {
             task = new TimerTask() {
                 @Override
                 public void run() {
-                    extractArticles();
+                    extractArticles(StopAction.this);
                 }
             };
         }
@@ -836,13 +837,13 @@ public class ActionsUI {
         }
 
         private void newSchedule() {
-            //timer = new java.util.Timer();
+            timer = new java.util.Timer();
             timer.schedule(task, 1000);
 
         }
 
         private void stopProces() {
-           
+            task.cancel();
             timer.cancel();
 
         }
@@ -887,19 +888,19 @@ public class ActionsUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             ScheduledThreadPoolExecutor t = new ScheduledThreadPoolExecutor(5);
-           // t.scheduleAtFixedRate(
-              SwingUtilities.invokeLater(new Runnable() {
+            // t.scheduleAtFixedRate(
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    extractArticles();
+                    extractArticles(null);
                 }
             });
-               //, 10, 0, TimeUnit.SECONDS);
+            //, 10, 0, TimeUnit.SECONDS);
 
         }
     }
 
-    private void extractArticles() {
+    private void extractArticles(StopAction stopAction) {
 
         String projProperties = (String) PropertiesUI.getInstance().getDefaultProps().get("PROJECTS");
         if (projProperties == null || projProperties.isEmpty()) {
@@ -926,6 +927,9 @@ public class ActionsUI {
         }
 
         while (objs.hasNext()) {
+            if (stopAction != null && stopAction.hasStarted == false) {
+                break;
+            }
             final JSONObject p = (JSONObject) objs.next();
             String dir = (String) p.get("dir");
             String name = (String) p.get("name");
@@ -939,14 +943,20 @@ public class ActionsUI {
             Iterator it = dirProp.keySet().iterator();
             URL url = null;
             while (it.hasNext()) {
+                if (stopAction != null && stopAction.hasStarted == false) {
+                    break;
+                }
                 ArrayList l = (ArrayList) dirProp.get(it.next());
                 for (int i = 0; i < l.size(); i++) {
+                    if (stopAction != null && stopAction.hasStarted == false) {
+                        break;
+                    }
                     LinksObject link = (LinksObject) l.get(i);
                     if (link.getWordCount() == null || link.getWordCount().equals("") /*|| Integer.parseInt(link.getWordCount()) < 50*/) {
                         try {
                             processArticle(link, dir);
-                            if (link.getWordCount() == null || link.getWordCount().equals("") 
-                                      || Integer.parseInt(link.getWordCount()) < 150) {
+                            if (link.getWordCount() == null || link.getWordCount().equals("")
+                                    || Integer.parseInt(link.getWordCount()) < 150) {
                                 //link.setWordCount("1");
                                 l.remove(link);
                             }
@@ -1360,15 +1370,16 @@ public class ActionsUI {
     }
 
     public class Help extends AbstractAction {
-
-        public Help() {
+        String helpLink;
+        public Help(String helpLink) {
             super("Run Project", new ImageIcon(AWTUtils.getIcon(null, "/images/help24.png")));
-
+            this.helpLink = helpLink;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+           // throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         InnerFramesUI.getInstance().displayHelp(helpLink);
         }
 
     }

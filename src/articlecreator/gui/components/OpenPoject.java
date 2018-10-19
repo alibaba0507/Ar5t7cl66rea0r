@@ -78,7 +78,8 @@ public class OpenPoject extends javax.swing.JPanel {
     private String objectDir;
     private String originalFile, spinFile;
     private DocumentListener txtWeblistener, txtSpinListener;
-
+    private AbstractAction actionProjectHelp;
+     private AbstractAction actionEditHelp;
     /**
      * Creates new form OpenPoject
      */
@@ -88,7 +89,8 @@ public class OpenPoject extends javax.swing.JPanel {
         /* this.projectList = projectList;
         this.projectListModel = projectListModel;
          */
-
+     actionProjectHelp = new ActionsUI().new Help("id.vl7nq1up3as8");
+     actionEditHelp = new ActionsUI().new Help("id.cr5fpwl67mnz");
         chooser = new FileChooserUI().createFileChooser(FileChooserUI.DIR_ONLY);
         if (ProjectsUI.selectedProjectItem != null
                 && ProjectsUI.selectedProjectItem instanceof ProjectItem) {
@@ -425,6 +427,7 @@ public class OpenPoject extends javax.swing.JPanel {
         txtProjName = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         btnImport = new javax.swing.JButton();
+        btnProjectHelp = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
@@ -434,6 +437,7 @@ public class OpenPoject extends javax.swing.JPanel {
         jLabel6 = new javax.swing.JLabel();
         btnSaveArticle = new javax.swing.JButton();
         btnSpin = new javax.swing.JButton();
+        btnEditHelp = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         txtWebView = new javax.swing.JEditorPane();
         jPanel8 = new javax.swing.JPanel();
@@ -484,18 +488,28 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         });
 
+        btnProjectHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
+        btnProjectHelp.setText("Help");
+        btnProjectHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProjectHelpActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(944, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnProjectSave)
-                .addGap(32, 32, 32))
+                .addGap(18, 18, 18)
+                .addComponent(btnProjectHelp)
+                .addGap(36, 36, 36))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(167, 167, 167)
                 .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(851, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -529,7 +543,9 @@ public class OpenPoject extends javax.swing.JPanel {
                 .addGap(65, 65, 65)
                 .addComponent(btnImport, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
-                .addComponent(btnProjectSave)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnProjectSave)
+                    .addComponent(btnProjectHelp))
                 .addGap(23, 23, 23))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
@@ -597,6 +613,15 @@ public class OpenPoject extends javax.swing.JPanel {
             }
         });
         jPanel3.add(btnSpin, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 0, -1, -1));
+
+        btnEditHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
+        btnEditHelp.setText("Help");
+        btnEditHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditHelpActionPerformed(evt);
+            }
+        });
+        jPanel3.add(btnEditHelp, new org.netbeans.lib.awtextra.AbsoluteConstraints(450, 0, -1, -1));
 
         jPanel4.add(jPanel3, java.awt.BorderLayout.PAGE_START);
 
@@ -780,6 +805,15 @@ public class OpenPoject extends javax.swing.JPanel {
         }  // End while
     }//GEN-LAST:event_btnProjectFileChooserActionPerformed
 
+    private void btnProjectHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectHelpActionPerformed
+         actionProjectHelp.actionPerformed(evt);
+    }//GEN-LAST:event_btnProjectHelpActionPerformed
+
+    private void btnEditHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditHelpActionPerformed
+         actionEditHelp.actionPerformed(evt);
+         // TODO add your handling code here:
+    }//GEN-LAST:event_btnEditHelpActionPerformed
+
     public void save() {
         String projName, keyWords, dir;
         if (txtProjName.getText().isEmpty()) {
@@ -935,8 +969,10 @@ public class OpenPoject extends javax.swing.JPanel {
    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnEditHelp;
     private javax.swing.JButton btnImport;
     private javax.swing.JButton btnProjectFileChooser;
+    private javax.swing.JButton btnProjectHelp;
     private javax.swing.JButton btnProjectSave;
     private javax.swing.JButton btnSaveArticle;
     private javax.swing.JButton btnSaveSpin;

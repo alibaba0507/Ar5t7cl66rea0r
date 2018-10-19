@@ -151,7 +151,7 @@ public class ConnectionManagerUI {
     public void processArticle(LinksObject link, String dir) throws Exception {
         Document doc = crawl(link.getLink(), null,true);
         // remove script and hidden shit 
-        doc.select("script,.hidden,form,a,footer,button").remove();
+        doc.select("script,.hidden,form,a,footer,button,iframe").remove();
         URL url = new URL(link.getLink());
         // base URI will be used within the loop below
         String baseUri = (new StringBuilder())
@@ -160,7 +160,7 @@ public class ConnectionManagerUI {
                 .append(url.getHost())
                 .toString();
         // select all article tags
-        Elements posts = doc.select("article");
+        Elements posts = new Elements();
         ArrayList listParser = (ArrayList) PropertiesUI.getInstance().getDefaultProps().get("USER_PARSER");
         if (posts.size() == 0) {
             if (listParser != null) {
@@ -173,6 +173,7 @@ public class ConnectionManagerUI {
                 }// end while
             }// end if
             if (posts.size() == 0) {
+                 posts = doc.select("article");
                 listParser = (ArrayList) PropertiesUI.getInstance().getDefaultProps().get("SYSTEM_PARSER");
                 Iterator it = listParser.iterator();
                 while (it.hasNext()) {

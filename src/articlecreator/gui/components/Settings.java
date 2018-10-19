@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Iterator;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
@@ -33,12 +34,15 @@ import za.co.utils.AWTUtils;
 public class Settings extends javax.swing.JDialog {
 
     private JPopupMenu popupText;
+    private AbstractAction actionSearchEngineHelp;
 
     /**
      * Creates new form Settings
      */
     public Settings(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        actionSearchEngineHelp = new ActionsUI().new Help("id.8zrjv01dmd2i");
+        // actionSearchEngineHelp = new ActionsUI().new Help("id.8zrjv01dmd2i");
         initComponents();
         // cboParseType.setSelectedIndex(1);
         //cboParseType.setSelectedIndex(0);
@@ -232,6 +236,11 @@ public class Settings extends javax.swing.JDialog {
 
         btnHelpSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
         btnHelpSearch.setText("Help");
+        btnHelpSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHelpSearchActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -323,6 +332,11 @@ public class Settings extends javax.swing.JDialog {
 
         btnHelpParser.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
         btnHelpParser.setText("Help");
+        btnHelpParser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHelpParserActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -417,6 +431,11 @@ public class Settings extends javax.swing.JDialog {
 
         btnHelpEmails.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/help24.png"))); // NOI18N
         btnHelpEmails.setText("Help");
+        btnHelpEmails.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHelpEmailsActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -650,6 +669,21 @@ public class Settings extends javax.swing.JDialog {
                 PropertiesUI.getInstance().saveProperties();
         }
     }//GEN-LAST:event_txtPasswordFocusLost
+
+    private void btnHelpSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpSearchActionPerformed
+        // TODO add your handling code here:
+        actionSearchEngineHelp.actionPerformed(evt);
+    }//GEN-LAST:event_btnHelpSearchActionPerformed
+
+    private void btnHelpParserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpParserActionPerformed
+        // TODO add your handling code here:
+        actionSearchEngineHelp.actionPerformed(evt);
+    }//GEN-LAST:event_btnHelpParserActionPerformed
+
+    private void btnHelpEmailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpEmailsActionPerformed
+        // TODO add your handling code here:
+        actionSearchEngineHelp.actionPerformed(evt);
+    }//GEN-LAST:event_btnHelpEmailsActionPerformed
     private void ShowPopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
             popupText.show(e.getComponent(), e.getX(), e.getY());

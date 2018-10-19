@@ -22,6 +22,7 @@ public class ProjectsUI {
     public static DefaultListModel projectListModel;
     public static JList projectList;
     public static JTextArea console;
+    
      public static void reloadProjectTree(String selectedProject) {
         if (ProjectsUI.projectListModel == null) {
             return;
