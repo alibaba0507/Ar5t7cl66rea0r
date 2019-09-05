@@ -11,8 +11,12 @@ import articlecreator.gui.components.ui.ProjectsUI;
 import articlecreator.gui.components.ui.PropertiesUI;
 import articlecreator.gui.run.ArticleManagmentMain;
 import articlecreator.spin.syntax.Engine;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -46,8 +50,9 @@ public class ConnectionManagerUI {
      */
     public Document openFile(String url) {
         Document doc = null;
-        if (!new File(url).exists())
+        if (!new File(url).exists()) {
             return doc;
+        }
         try {
             doc = Jsoup.parse(new File(url), "UTF-8");
 
@@ -102,6 +107,7 @@ public class ConnectionManagerUI {
         try {
             Engine spinEngine = new Engine();
             doc = Jsoup.parse(new File(url), "UTF-8");
+
             Elements els = doc.body().getAllElements();
             for (Element e : els) {
                 List<TextNode> tnList = e.textNodes();
@@ -110,7 +116,7 @@ public class ConnectionManagerUI {
                     String newPhrase = spinEngine.update(orig, false);
                     if (!orig.equalsIgnoreCase(newPhrase)) {
                         TextNode newTn = new TextNode(newPhrase);
-                      //  newTn.
+                        //  newTn.
                         tn.replaceWith(newTn); // tn.text(orig.replaceAll(orig, newPhrase));
                         //ProjectsUI.console.append("\r\n" + orig.trim() + " --- " + tn.text() + " ---- \r\n\r\n");
                     }
@@ -120,26 +126,48 @@ public class ConnectionManagerUI {
             }// end for
 
             File f = new File(url);
-            
+
             String fileDirectory = f.getParent();
-           if (!fileDirectory.endsWith(ArticleManagmentMain.FILE_SEPARATOR + "spin"))
+            if (!fileDirectory.endsWith(ArticleManagmentMain.FILE_SEPARATOR + "spin")) {
                 fileDirectory = f.getParent() + ArticleManagmentMain.FILE_SEPARATOR + "spin";
+            }
             File copyDir = new File(fileDirectory);
             if (!copyDir.exists()
                     || !copyDir.isDirectory()) {
                 copyDir.mkdir();
             }
-
+            String fileName = f.getName();
             f = new File(fileDirectory + ArticleManagmentMain.FILE_SEPARATOR + f.getName());
             if (!f.exists()) {
                 f.createNewFile();
+            }
+
+            fileName = fileName.substring(0, fileName.lastIndexOf("."));
+
+            File imageDir = new File(fileDirectory + ArticleManagmentMain.FILE_SEPARATOR + fileName);
+            if (!imageDir.exists() || !imageDir.isDirectory()) {
+                imageDir.mkdirs();
+            }
+            Elements img = doc.getElementsByTag("img");
+            for (Element el : img) {
+
+                //for each element get the srs url
+                String src = el.absUrl("src");
+                URL urlImg = new URL(src);
+                el.attr("src", "/" + fileName + "/" + urlImg.getFile());
+
+                System.out.println("Image Found!");
+                System.out.println("src attribute is : " + src);
+                System.out.println("src Saved as : " + "/" + fileName + "/" + urlImg.getFile());
+
+                getImages(src, imageDir.toString());
+
             }
 
             PrintWriter writer = new PrintWriter(f, "UTF-8");
             writer.write(doc.toString());
             writer.flush();
             writer.close();
-
             //html = doc.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -148,8 +176,37 @@ public class ConnectionManagerUI {
         }
     }
 
+    private static void getImages(String src, String folder) throws IOException {
+
+        //String folder = null;
+        //Exctract the name of the image from the src attribute
+        int indexname = src.lastIndexOf("/");
+
+        if (indexname == src.length()) {
+            src = src.substring(1, indexname);
+        }
+
+        indexname = src.lastIndexOf("/");
+        String name = src.substring(indexname, src.length());
+
+        System.out.println(name);
+
+        //Open a URL Stream
+        URL url = new URL(src);
+        InputStream in = url.openStream();
+
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(folder + ArticleManagmentMain.FILE_SEPARATOR + name));
+
+        for (int b; (b = in.read()) != -1;) {
+            out.write(b);
+        }
+        out.close();
+        in.close();
+
+    }
+
     public void processArticle(LinksObject link, String dir) throws Exception {
-        Document doc = crawl(link.getLink(), null,true);
+        Document doc = crawl(link.getLink(), null, true);
         // remove script and hidden shit 
         doc.select("script,.hidden,form,a,footer,button,iframe").remove();
         URL url = new URL(link.getLink());
@@ -173,7 +230,7 @@ public class ConnectionManagerUI {
                 }// end while
             }// end if
             if (posts.size() == 0) {
-                 posts = doc.select("article");
+                posts = doc.select("article");
                 listParser = (ArrayList) PropertiesUI.getInstance().getDefaultProps().get("SYSTEM_PARSER");
                 Iterator it = listParser.iterator();
                 while (it.hasNext()) {
@@ -306,9 +363,9 @@ public class ConnectionManagerUI {
         if (redirect != null && !redirect.equals("") && Integer.parseInt(redirect) > 0) {
             followRedirect = true;
         }
-       Document doc = crawl(urlEncode, "", true);
-      // final Document doc = Jsoup.connect("https://google.com/search?q="+URLEncoder.encode(search, charset)).userAgent(USER_AGENT).get();
-       if (doc != null) {
+        Document doc = crawl(urlEncode, "", true);
+        // final Document doc = Jsoup.connect("https://google.com/search?q="+URLEncoder.encode(search, charset)).userAgent(USER_AGENT).get();
+        if (doc != null) {
 
             //Elements links = doc.body().select(".g>.r>a");
             //Elements links = doc.body().select("h3.r a"); // this is google

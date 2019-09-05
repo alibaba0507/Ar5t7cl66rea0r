@@ -89,6 +89,7 @@ public class ArticleManagmentMain extends JFrame {
     public static final String EMAIL_PATTERN
             = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
             + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    
 
     // private ColorMenu foregroundMenu1, backgroundMenu1, foregroundMenu2, backgroundMenu2;
     private final JDesktopPane desktop;
@@ -133,6 +134,7 @@ public class ArticleManagmentMain extends JFrame {
         projectList = new JList();
         projectList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectListModel = new DefaultListModel();
+        
         ProjectsUI.projectList = projectList;
         ProjectsUI.projectListModel = projectListModel;
         projectList.addMouseListener(new MouseAdapter() {
@@ -196,6 +198,7 @@ public class ArticleManagmentMain extends JFrame {
          */
         JPanel projectPanel = new JPanel(new BorderLayout());
         JLabel projectLabel = new JLabel("Projects:");
+        
         projectLabel.setIcon(new ImageIcon(AWTUtils.getIcon(desktop, "/images/Open24.gif")));
 
         projectLabel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
