@@ -33,7 +33,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.safety.Whitelist;
 import org.jsoup.select.Elements;
+import za.co.net.WebConnector;
+import za.co.net.WebRequest;
 
 /**
  *
@@ -206,7 +209,10 @@ public class ConnectionManagerUI {
     }
 
     public void processArticle(LinksObject link, String dir) throws Exception {
-        Document doc = crawl(link.getLink(), null, true);
+        //Document doc = crawl(link.getLink(),null, true);
+        WebConnector wc = new WebConnector();
+         Document doc = wc.get(new WebRequest(link.getLink(), link.getLink()), null);
+         
         // remove script and hidden shit 
         doc.select("script,.hidden,form,a,footer,button,iframe").remove();
         URL url = new URL(link.getLink());
@@ -248,7 +254,12 @@ public class ConnectionManagerUI {
         }
         // #content or .content #mainContent or .mainContent
         // .blog-posts hfeed
-        String txtToSave = posts.text();
+        posts.select("br").after("\n");
+        posts.select("p").prepend("\\n\\n");
+        String s = posts.html().replaceAll("\\\\n", "\n");
+        String txtToSave =Jsoup.clean(s, ""
+                   , Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+        //String txtToSave = posts.text();
 
         String title = doc.title();
         if (title.length() > 20) {
@@ -363,7 +374,11 @@ public class ConnectionManagerUI {
         if (redirect != null && !redirect.equals("") && Integer.parseInt(redirect) > 0) {
             followRedirect = true;
         }
-        Document doc = crawl(urlEncode, "", true);
+        
+        WebConnector wc = new WebConnector();
+        // this give us opportuinity for proxy later on 
+        Document doc = wc.get(new WebRequest(urlEncode, urlEncode), null);
+        //Document doc = crawl(urlEncode, "", true);
         // final Document doc = Jsoup.connect("https://google.com/search?q="+URLEncoder.encode(search, charset)).userAgent(USER_AGENT).get();
         if (doc != null) {
 

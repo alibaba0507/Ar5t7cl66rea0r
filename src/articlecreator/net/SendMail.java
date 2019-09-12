@@ -432,7 +432,7 @@ public class SendMail extends javax.swing.JFrame {
   void Send_actionPerformed(java.awt.event.ActionEvent event) {
     try {
 
-      java.net.Socket s = new java.net.Socket(_smtp.getText(), 25);
+      java.net.Socket s = new java.net.Socket(_smtp.getText(), 587 );
       _out = new java.io.PrintWriter(s.getOutputStream());
       _in = new java.io.BufferedReader(new java.io.InputStreamReader(s
           .getInputStream()));
